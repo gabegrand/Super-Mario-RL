@@ -28,7 +28,7 @@ for i in xrange(TRAINING_ITERATIONS):
     env.reset()
     print('-- DONE resetting environment')
 
-    print('-- START playing')
+    print('-- START playing iteration %d' %i)
     done = False
 
     # Sample first action randomly
@@ -40,10 +40,11 @@ for i in xrange(TRAINING_ITERATIONS):
 
         # Choose action according to Q
         action = Agent.getAction(state)
-        # action = hyperparameters.mapping[action] TODO
 
+        # Take action
         newState, reward, done, info = env.step(action)
 
+        # Convert numpy arrays to strings for storage in dict
         state = str(state)
         newState = str(newState)
 
@@ -52,11 +53,15 @@ for i in xrange(TRAINING_ITERATIONS):
         # Update Q values
         Agent.update(state, action, newState, reward)
 
+        # Advance the state
         state = newState
 
     print(info)
 
-    # TODO: Handle case where info[ignore] is true
+    # Handle case where game gets stuck
+    if 'ignore' in info.keys() and info['ignore'] == True:
+        i -= 1
+        print "Game stuck. Resetting..."
 
     print('-- DONE playing')
 

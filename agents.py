@@ -8,6 +8,7 @@ class QLearningAgent:
         self.Q = util.Counter()
         self.alpha = hyperparameters.ALPHA
         self.epsilon = hyperparameters.EPSILON
+        self.gamma = hyperparameters.GAMMA
         self.actions = hyperparameters.mapping.keys()
 
     def getQValue(self, state, action):
@@ -69,4 +70,4 @@ class QLearningAgent:
         nextStateValue = self.computeValueFromQValues(nextState)
 
         # Update Q value with running average based on observed sample
-        self.Q[state, action] = (1 - self.alpha) * self.getQValue(state, action) + self.alpha * (reward + self.epsilon * nextStateValue)
+        self.Q[state, action] = (1 - self.alpha) * self.getQValue(state, action) + self.alpha * (reward + self.gamma * nextStateValue)

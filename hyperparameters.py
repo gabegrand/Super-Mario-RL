@@ -1,14 +1,11 @@
 TRAINING_ITERATIONS = 10
 
-LEVEL = 'ppaquette/SuperMarioBros-1-3-Tiles-v0'
-
-# Tiled state space
-TILE_ROWS = 16
-TILE_COLS = 13
+LEVEL = 'ppaquette/SuperMarioBros-1-1-Tiles-v0'
 
 # Q Learning Agent
-ALPHA = 0.5
+ALPHA = 0.6
 EPSILON = 0.2
+GAMMA = 0.5
 
 # Action mapping
 mapping = {
