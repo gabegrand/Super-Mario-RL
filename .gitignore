@@ -1,6 +1,6 @@
 # Gabe Additions #
 ##################
-save/*
+save/*.npy
 
 # Kevin Additions #
 ############
