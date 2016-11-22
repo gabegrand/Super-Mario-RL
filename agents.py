@@ -1,15 +1,17 @@
 import util
 import random
-import hyperparameters
+import numpy as np
+from datetime import datetime
+import hyperparameters as hp
 
 class QLearningAgent:
 
     def __init__(self):
         self.Q = util.Counter()
-        self.alpha = hyperparameters.ALPHA
-        self.epsilon = hyperparameters.EPSILON
-        self.gamma = hyperparameters.GAMMA
-        self.actions = hyperparameters.mapping.keys()
+        self.alpha = hp.ALPHA
+        self.epsilon = hp.EPSILON
+        self.gamma = hp.GAMMA
+        self.actions = hp.mapping.keys()
 
     def getQValue(self, state, action):
         return self.Q[state, action]
@@ -45,7 +47,11 @@ class QLearningAgent:
         indices = [i for i, x in enumerate(action_values) if x == max_value]
 
         # Return action with max value, breaking ties randomly
-        return self.actions[random.choice(indices)]
+        action = self.actions[random.choice(indices)]
+
+        print "Action: %d, Value: %f" % (action, max_value)
+
+        return action
 
     def getAction(self, state):
         """
@@ -71,3 +77,11 @@ class QLearningAgent:
 
         # Update Q value with running average based on observed sample
         self.Q[state, action] = (1 - self.alpha) * self.getQValue(state, action) + self.alpha * (reward + self.gamma * nextStateValue)
+
+    def numStatesLearned(self):
+        return len(self.Q.keys())
+
+    def save(self, i):
+        now = datetime.now()
+        fname = '-'.join([str(x) for x in [now.year, now.month, now.day, now.hour, now.minute]]) + '-world-' + hp.WORLD + '-iter-' + str(i)
+        np.save('save/' + fname, self.Q)

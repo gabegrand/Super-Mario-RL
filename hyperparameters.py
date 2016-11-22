@@ -1,11 +1,12 @@
 TRAINING_ITERATIONS = 10
 
-LEVEL = 'ppaquette/SuperMarioBros-1-1-Tiles-v0'
+WORLD = '1-3'
+LEVEL = 'ppaquette/SuperMarioBros-' + WORLD + '-Tiles-v0'
 
-# Q Learning Agent
-ALPHA = 0.6
-EPSILON = 0.2
-GAMMA = 0.5
+# Q Learning Agent Parameters
+ALPHA = 0.6     # Learning rate
+EPSILON = 0.2   # Radom move probability
+GAMMA = 0.5     # Discount factor
 
 # Action mapping
 mapping = {

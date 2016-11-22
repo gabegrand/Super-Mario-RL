@@ -10,6 +10,14 @@ from hyperparameters import *
 # Initialize agent
 Agent = QLearningAgent()
 
+# Diagnostics
+diagnostics = {'states_learned': 0,
+               'freezes': 0,
+               'alpha': ALPHA,
+               'epsilon': EPSILON,
+               'gamma': GAMMA
+               }
+
 print('-- START training iterations')
 i = 0
 while i < TRAINING_ITERATIONS:
@@ -51,26 +59,29 @@ while i < TRAINING_ITERATIONS:
         state = str(state)
         newState = str(newState)
 
-        print newState, reward
-
         # Update Q values
         Agent.update(state, action, newState, reward)
 
         # Advance the state
         state = newState
 
-    print(info)
-
     # Handle case where game gets stuck
     if 'ignore' in info.keys() and info['ignore'] == True:
-        print "Game stuck. Resetting..."
+        print('Game stuck. Resetting...')
+        diagnostics['freezes'] += 1
 
-    # Go to next iteration
+    # Save Q-values and go to next iteration
     else:
+        print('Iteration %d complete. Saving Q values...' % i)
+        Agent.save(i)
         i += 1
 
-    print('-- DONE playing')
+    # Print diagnostic information
+    diagnostics['states_learned'] = Agent.numStatesLearned()
+    print(info)
+    print (diagnostics)
 
+    print('-- DONE playing')
     env.close()
 
 print('-- DONE training iterations')
