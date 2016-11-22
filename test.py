@@ -1,28 +1,31 @@
 import gym
-import ppaquette_gym_super_mario
+import gym_pull
+# Only need to pull this once
+# gym_pull.pull('github.com/ppaquette/gym-super-mario')
 from ppaquette_gym_super_mario import wrappers
 import multiprocessing
 from agents import QLearningAgent
 from hyperparameters import *
 
-print('-- START creating environment')
-env = gym.make(LEVEL)
-print('-- DONE creating environment')
-
-print('-- START acquiring multiprocessing lock')
-multiprocessing_lock = multiprocessing.Lock()
-env.configure(lock=multiprocessing_lock)
-print('-- DONE acquiring multiprocessing lock')
-
-# Discretize action space to 14 possible button combinations
-wrapper = wrappers.ToDiscrete()
-env = wrapper(env)
-
 # Initialize agent
 Agent = QLearningAgent()
 
 print('-- START training iterations')
-for i in xrange(TRAINING_ITERATIONS):
+i = 0
+while i < TRAINING_ITERATIONS:
+
+    print('-- START creating environment')
+    env = gym.make(LEVEL)
+    print('-- DONE creating environment')
+
+    print('-- START acquiring multiprocessing lock')
+    multiprocessing_lock = multiprocessing.Lock()
+    env.configure(lock=multiprocessing_lock)
+    print('-- DONE acquiring multiprocessing lock')
+
+    # Discretize action space to 14 possible button combinations
+    wrapper = wrappers.ToDiscrete()
+    env = wrapper(env)
 
     print('-- START resetting environment')
     env.reset()
@@ -60,9 +63,14 @@ for i in xrange(TRAINING_ITERATIONS):
 
     # Handle case where game gets stuck
     if 'ignore' in info.keys() and info['ignore'] == True:
-        i -= 1
         print "Game stuck. Resetting..."
 
+    # Go to next iteration
+    else:
+        i += 1
+
     print('-- DONE playing')
+
+    env.close()
 
 print('-- DONE training iterations')
