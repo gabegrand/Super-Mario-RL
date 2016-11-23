@@ -1,21 +1,31 @@
-TRAINING_ITERATIONS = 10
-
+# Game
 WORLD = '1-3'
 LEVEL = 'ppaquette/SuperMarioBros-' + WORLD + '-Tiles-v0'
 
+TRAINING_ITERATIONS = 2
+
+# Whether to load from existing Q values file
+LOAD_FROM = '2016-11-23-17-37-world-1-3-iter-2.pickle'
+
+# How often to save Q values
+SAVE_EVERY = 5
+
+# 0 is Q-Learning, 1 is POMDP
+AGENT_TYPE = 0
+
 # Q Learning Agent Parameters
 ALPHA = 0.5     # Learning rate
-EPSILON = 0.2   # Radom move probability
+EPSILON = 0.2   # Random move probability
 GAMMA = 0.8     # Discount factor
 
 # Penalty for dying in reward function
 DEATH_PENALTY = 100
 
-# Percentage of score increase added to reward
+# Proportion of score increase added to reward (0 to 1)
 SCORE_FACTOR = 1
 
 # Action mapping
-mapping = {
+MAPPING = {
     0: [0, 0, 0, 0, 0, 0],  # NOOP
     1: [1, 0, 0, 0, 0, 0],  # Up
     2: [0, 0, 1, 0, 0, 0],  # Down

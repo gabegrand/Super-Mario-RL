@@ -1,25 +1,45 @@
+# SEE README.md FOR PREREQUISITE INSTALL INSTRUCTIONS
+
 import gym
 import gym_pull
-# Only need to pull this once
-# gym_pull.pull('github.com/ppaquette/gym-super-mario')
 from ppaquette_gym_super_mario import wrappers
 import multiprocessing
-from agents import QLearningAgent
-from hyperparameters import *
+from qAgent import QLearningAgent
+from pomdpAgent import PomdpAgent
+import hyperparameters as hp
 
-# Initialize agent
-Agent = QLearningAgent()
+# Initialize the correct agent
+agent = None
+if hp.AGENT_TYPE == 0:
+    agent = QLearningAgent()
+elif hp.AGENT_TYPE == 1:
+    agent = PomdpAgent()
+else:
+    raise ValueError("Invalid AGENT_TYPE in hyperparameters")
+
+# Load from previous saved Q values
+if hp.LOAD_FROM is not None:
+
+    print('Loading Q values from %s' % hp.LOAD_FROM)
+    agent.load(hp.LOAD_FROM)
+
+    # Start iterations from where we left off
+    j = int(hp.LOAD_FROM[-(len('.pickle') + 1)]) + 1
+    print('Starting at iteration %d' % j)
+
+else:
+    j = 0
 
 # Diagnostics
 diagnostics = {}
 num_freezes = 0
 
 print('-- START training iterations')
-i = 1
-while i <= TRAINING_ITERATIONS:
+i = 0
+while i < hp.TRAINING_ITERATIONS:
 
     print('-- START creating environment')
-    env = gym.make(LEVEL)
+    env = gym.make(hp.LEVEL)
     print('-- DONE creating environment')
 
     print('-- START acquiring multiprocessing lock')
@@ -35,7 +55,7 @@ while i <= TRAINING_ITERATIONS:
     env.reset()
     print('-- DONE resetting environment')
 
-    print('-- START playing iteration %d' %i)
+    print('-- START playing iteration %d / %d' % (i + j, hp.TRAINING_ITERATIONS + j - 1))
     done = False
 
     # Keep track of agent's score in game
@@ -49,7 +69,7 @@ while i <= TRAINING_ITERATIONS:
     while not done:
 
         # Choose action according to Q
-        action = Agent.getAction(state)
+        action = agent.getAction(state)
 
         # Take action
         newState, reward, done, info = env.step(action)
@@ -61,17 +81,17 @@ while i <= TRAINING_ITERATIONS:
         # If Mario dies, punish
         if 'life' in info.keys() and info['life'] == 0:
             print("Oh no! Mario died!")
-            reward -= DEATH_PENALTY
+            reward -= hp.DEATH_PENALTY
 
         # If Mario's score increases, reward
         if 'score' in info.keys() and int(info['score']) > curr_score:
-            delta = (int(info['score']) - curr_score) * SCORE_FACTOR
+            delta = (int(info['score']) - curr_score) * hp.SCORE_FACTOR
             print("Bling! Score up by %d" % delta)
             reward += delta
             curr_score = int(info['score'])
 
         # Update Q values
-        Agent.update(state, action, newState, reward)
+        agent.update(state, action, newState, reward)
 
         # Advance the state
         state = newState
@@ -83,7 +103,7 @@ while i <= TRAINING_ITERATIONS:
     else:
         # Update diagnostics
         diagnostics[i] = {'freezes': num_freezes,
-                          'states_learned': Agent.numStatesLearned(),
+                          'states_learned': agent.numStatesLearned(),
                           'distance': info['distance'],
                           'score': info['score'],
                           }
@@ -91,9 +111,13 @@ while i <= TRAINING_ITERATIONS:
         print(info)
         print(diagnostics[i])
 
-        # Save Q-values and go to next iteration
-        print('Iteration %d complete. Saving Q values...' % i)
-        Agent.save(i)
+        # Save Q-values
+        if i % hp.SAVE_EVERY == 0:
+            print('Saving Q values...')
+            agent.save(i, j)
+
+        # Go to next iteration
+        print('Iteration %d / %d complete.' % (i + j, hp.TRAINING_ITERATIONS + j - 1))
         i += 1
 
     print('-- DONE playing')
