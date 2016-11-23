@@ -1,6 +1,6 @@
 TRAINING_ITERATIONS = 10
 
-WORLD = '1-1'
+WORLD = '1-3'
 LEVEL = 'ppaquette/SuperMarioBros-' + WORLD + '-Tiles-v0'
 
 # Q Learning Agent Parameters
