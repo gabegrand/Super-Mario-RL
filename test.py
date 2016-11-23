@@ -11,16 +11,12 @@ from hyperparameters import *
 Agent = QLearningAgent()
 
 # Diagnostics
-diagnostics = {'states_learned': 0,
-               'freezes': 0,
-               'alpha': ALPHA,
-               'epsilon': EPSILON,
-               'gamma': GAMMA
-               }
+diagnostics = {}
+num_freezes = 0
 
 print('-- START training iterations')
-i = 0
-while i < TRAINING_ITERATIONS:
+i = 1
+while i <= TRAINING_ITERATIONS:
 
     print('-- START creating environment')
     env = gym.make(LEVEL)
@@ -59,6 +55,10 @@ while i < TRAINING_ITERATIONS:
         state = str(state)
         newState = str(newState)
 
+        # If Mario dies, punish
+        if 'life' in info.keys() and info['life'] == 0:
+             reward -= DEATH_PENALTY
+
         # Update Q values
         Agent.update(state, action, newState, reward)
 
@@ -68,20 +68,25 @@ while i < TRAINING_ITERATIONS:
     # Handle case where game gets stuck
     if 'ignore' in info.keys() and info['ignore'] == True:
         print('Game stuck. Resetting...')
-        diagnostics['freezes'] += 1
-
-    # Save Q-values and go to next iteration
+        num_freezes += 1
     else:
+        # Update diagnostics
+        diagnostics[i] = {'freezes': num_freezes,
+                          'states_learned': Agent.numStatesLearned(),
+                          'distance': info['distance'],
+                          'score': info['score'],
+                          }
+
+        print(info)
+        print(diagnostics[i])
+
+        # Save Q-values and go to next iteration
         print('Iteration %d complete. Saving Q values...' % i)
         Agent.save(i)
         i += 1
-
-    # Print diagnostic information
-    diagnostics['states_learned'] = Agent.numStatesLearned()
-    print(info)
-    print (diagnostics)
 
     print('-- DONE playing')
     env.close()
 
 print('-- DONE training iterations')
+print diagnostics
