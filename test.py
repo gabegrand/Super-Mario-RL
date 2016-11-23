@@ -1,14 +1,14 @@
+# SEE README.md FOR PREREQUISITE INSTALL INSTRUCTIONS
+
 import gym
 import gym_pull
-# Only need to pull this once
-# gym_pull.pull('github.com/ppaquette/gym-super-mario')
 from ppaquette_gym_super_mario import wrappers
 import multiprocessing
 from agents import QLearningAgent
 from hyperparameters import *
 
-# Initialize agent
-Agent = QLearningAgent()
+# Initialize q learning agent
+agent = QLearningAgent()
 
 # Diagnostics
 diagnostics = {}
@@ -49,7 +49,7 @@ while i <= TRAINING_ITERATIONS:
     while not done:
 
         # Choose action according to Q
-        action = Agent.getAction(state)
+        action = agent.getAction(state)
 
         # Take action
         newState, reward, done, info = env.step(action)
@@ -71,7 +71,7 @@ while i <= TRAINING_ITERATIONS:
             curr_score = int(info['score'])
 
         # Update Q values
-        Agent.update(state, action, newState, reward)
+        agent.update(state, action, newState, reward)
 
         # Advance the state
         state = newState
@@ -83,7 +83,7 @@ while i <= TRAINING_ITERATIONS:
     else:
         # Update diagnostics
         diagnostics[i] = {'freezes': num_freezes,
-                          'states_learned': Agent.numStatesLearned(),
+                          'states_learned': agent.numStatesLearned(),
                           'distance': info['distance'],
                           'score': info['score'],
                           }
@@ -93,7 +93,7 @@ while i <= TRAINING_ITERATIONS:
 
         # Save Q-values and go to next iteration
         print('Iteration %d complete. Saving Q values...' % i)
-        Agent.save(i)
+        agent.save(i)
         i += 1
 
     print('-- DONE playing')

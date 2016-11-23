@@ -5,7 +5,7 @@ LEVEL = 'ppaquette/SuperMarioBros-' + WORLD + '-Tiles-v0'
 
 # Q Learning Agent Parameters
 ALPHA = 0.5     # Learning rate
-EPSILON = 0.2   # Radom move probability
+EPSILON = 0.2   # Random move probability
 GAMMA = 0.8     # Discount factor
 
 # Penalty for dying in reward function
