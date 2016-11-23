@@ -112,7 +112,7 @@ while i <= hp.TRAINING_ITERATIONS:
         print(diagnostics[i])
 
         # Save Q-values
-        if i % hp.SAVE_EVERY == 0:
+        if (i - 1) % hp.SAVE_EVERY == 0:
             print('Saving Q values...')
             agent.save(i, j)
 
