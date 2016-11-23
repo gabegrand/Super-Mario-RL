@@ -8,7 +8,7 @@ First, install the OpenAI Gym and the FCEUX Nintendo Entertainment System emulat
     pip install gym
     pip install gym-pull
     brew upgrade
-    brew install fceux
+    brew install homebrew/games/fceux
     
 Next, open a Python environment in Terminal and execute the following commands.
     
