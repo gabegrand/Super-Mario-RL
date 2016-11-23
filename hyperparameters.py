@@ -11,7 +11,7 @@ GAMMA = 0.8     # Discount factor
 # Penalty for dying in reward function
 DEATH_PENALTY = 100
 
-# Percentage of score increase added to reward
+# Proportion of score increase added to reward (0 to 1)
 SCORE_FACTOR = 1
 
 # Action mapping
