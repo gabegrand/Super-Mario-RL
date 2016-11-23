@@ -9,7 +9,10 @@ EPSILON = 0.2   # Radom move probability
 GAMMA = 0.8     # Discount factor
 
 # Penalty for dying in reward function
-DEATH_PENALTY = 10
+DEATH_PENALTY = 100
+
+# Percentage of score increase added to reward
+SCORE_FACTOR = 1
 
 # Action mapping
 mapping = {

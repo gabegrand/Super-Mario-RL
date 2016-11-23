@@ -38,6 +38,9 @@ while i <= TRAINING_ITERATIONS:
     print('-- START playing iteration %d' %i)
     done = False
 
+    # Keep track of agent's score in game
+    curr_score = 0
+
     # Sample first action randomly
     action = env.action_space.sample()
     state, reward, done, info = env.step(action)
@@ -57,7 +60,15 @@ while i <= TRAINING_ITERATIONS:
 
         # If Mario dies, punish
         if 'life' in info.keys() and info['life'] == 0:
-             reward -= DEATH_PENALTY
+            print("Oh no! Mario died!")
+            reward -= DEATH_PENALTY
+
+        # If Mario's score increases, reward
+        if 'score' in info.keys() and int(info['score']) > curr_score:
+            delta = (int(info['score']) - curr_score) * SCORE_FACTOR
+            print("Bling! Score up by %d" % delta)
+            reward += delta
+            curr_score = int(info['score'])
 
         # Update Q values
         Agent.update(state, action, newState, reward)

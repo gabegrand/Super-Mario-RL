@@ -49,7 +49,7 @@ class QLearningAgent:
         # Return action with max value, breaking ties randomly
         action = self.actions[random.choice(indices)]
 
-        print "Action: %d, Value: %f" % (action, max_value)
+        # print "Action: %d, Value: %f" % (action, max_value)
 
         return action
 
