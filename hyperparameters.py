@@ -1,5 +1,8 @@
 TRAINING_ITERATIONS = 10
 
+# 0 is Q-Learning, 1 is POMDP
+AGENT_TYPE = 0
+
 WORLD = '1-1'
 LEVEL = 'ppaquette/SuperMarioBros-' + WORLD + '-Tiles-v0'
 
@@ -15,7 +18,7 @@ DEATH_PENALTY = 100
 SCORE_FACTOR = 1
 
 # Action mapping
-mapping = {
+MAPPING = {
     0: [0, 0, 0, 0, 0, 0],  # NOOP
     1: [1, 0, 0, 0, 0, 0],  # Up
     2: [0, 0, 1, 0, 0, 0],  # Down

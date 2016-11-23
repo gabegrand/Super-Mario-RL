@@ -4,22 +4,29 @@ import gym
 import gym_pull
 from ppaquette_gym_super_mario import wrappers
 import multiprocessing
-from agents import QLearningAgent
-from hyperparameters import *
+from qAgent import QLearningAgent
+from pomdpAgent import PomdpAgent
+import hyperparameters as hp
 
-# Initialize q learning agent
-agent = QLearningAgent()
+# Initialize the correct agent
+agent = None
+if hp.AGENT_TYPE == 0:
+    agent = QLearningAgent()
+elif hp.AGENT_TYPE == 1:
+    agent = PomdpAgent()
+else:
+    raise ValueError("Invalid AGENT_TYPE in hyperparameters")
 
 # Diagnostics
 diagnostics = {}
 num_freezes = 0
 
 print('-- START training iterations')
-i = 1
-while i <= TRAINING_ITERATIONS:
+i = 0
+while i < hp.TRAINING_ITERATIONS:
 
     print('-- START creating environment')
-    env = gym.make(LEVEL)
+    env = gym.make(hp.LEVEL)
     print('-- DONE creating environment')
 
     print('-- START acquiring multiprocessing lock')
@@ -61,11 +68,11 @@ while i <= TRAINING_ITERATIONS:
         # If Mario dies, punish
         if 'life' in info.keys() and info['life'] == 0:
             print("Oh no! Mario died!")
-            reward -= DEATH_PENALTY
+            reward -= hp.DEATH_PENALTY
 
         # If Mario's score increases, reward
         if 'score' in info.keys() and int(info['score']) > curr_score:
-            delta = (int(info['score']) - curr_score) * SCORE_FACTOR
+            delta = (int(info['score']) - curr_score) * hp.SCORE_FACTOR
             print("Bling! Score up by %d" % delta)
             reward += delta
             curr_score = int(info['score'])

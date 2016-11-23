@@ -4,14 +4,14 @@ import numpy as np
 from datetime import datetime
 import hyperparameters as hp
 
-class QLearningAgent:
+class PomdpAgent:
 
     def __init__(self):
         self.Q = util.Counter()
         self.alpha = hp.ALPHA
         self.epsilon = hp.EPSILON
         self.gamma = hp.GAMMA
-        self.actions = hp.mapping.keys()
+        self.actions = hp.MAPPING.keys()
 
     def getQValue(self, state, action):
         return self.Q[state, action]
