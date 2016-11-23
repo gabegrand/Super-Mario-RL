@@ -35,8 +35,8 @@ diagnostics = {}
 num_freezes = 0
 
 print('-- START training iterations')
-i = 0
-while i < hp.TRAINING_ITERATIONS:
+i = 1
+while i <= hp.TRAINING_ITERATIONS:
 
     print('-- START creating environment')
     env = gym.make(hp.LEVEL)
@@ -55,7 +55,7 @@ while i < hp.TRAINING_ITERATIONS:
     env.reset()
     print('-- DONE resetting environment')
 
-    print('-- START playing iteration %d / %d' % (i + j, hp.TRAINING_ITERATIONS + j - 1))
+    print('-- START playing iteration %d / %d' % (i + j, hp.TRAINING_ITERATIONS + j))
     done = False
 
     # Keep track of agent's score in game
@@ -117,7 +117,7 @@ while i < hp.TRAINING_ITERATIONS:
             agent.save(i, j)
 
         # Go to next iteration
-        print('Iteration %d / %d complete.' % (i + j, hp.TRAINING_ITERATIONS + j - 1))
+        print('Iteration %d / %d complete.' % (i + j, hp.TRAINING_ITERATIONS + j))
         i += 1
 
     print('-- DONE playing')
