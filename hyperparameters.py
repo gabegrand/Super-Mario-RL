@@ -1,8 +1,8 @@
 # Game
-WORLD = '1-1'
+WORLD = '1-4'
 LEVEL = 'ppaquette/SuperMarioBros-' + WORLD + '-Tiles-v0'
 
-TRAINING_ITERATIONS = 10
+TRAINING_ITERATIONS = 100
 
 # Whether to load from existing Q values file
 LOAD_FROM = None
@@ -14,9 +14,9 @@ SAVE_EVERY = 10
 AGENT_TYPE = 0
 
 # Q Learning Agent Parameters
-ALPHA = 0.25     # Learning rate
-EPSILON = 0.1   # Random move probability
-GAMMA = 0.8     # Discount factor
+ALPHA = 0.3     # Learning rate
+EPSILON = 0.2   # Random move probability
+GAMMA = 0.9     # Discount factor
 
 # Penalty for dying in reward function
 DEATH_PENALTY = 100
