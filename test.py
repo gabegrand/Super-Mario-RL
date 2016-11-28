@@ -65,6 +65,12 @@ while i <= hp.TRAINING_ITERATIONS:
 
     while not done:
 
+        print state
+        print "Right ground:", ft.groundRightDistance(state)
+        print "Left ground:", ft.groundLeftDistance(state)
+        print "Vert ground:", ft.groundVertDistance(state)
+        print "Vert Roof:", ft.roofVertDistance(state)
+
         # Choose action according to Q
         action = agent.getAction(str(state))
 

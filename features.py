@@ -10,10 +10,11 @@ def marioPosition(state):
 		return None
 	return rows[0], cols[0]
 
-# Returns the number of rows from Mario to the roof
-# Return None if no ground is vertically below Mario
+# Returns the number of rows between Mario and the ground (0 if next level is ground)
+# if no ground below Mario, return number of rows between Mario and offscreen
+# Return None if Mario not on screen
 # Always perform None check on return val
-def distanceFromGround(state):
+def groundVertDistance(state):
 	mario_pos = marioPosition(state)
 	if mario_pos is None:
 		return None
@@ -24,13 +25,14 @@ def distanceFromGround(state):
 	obj_vert_dists = np.nonzero(col_contents == 1)
 
 	if obj_vert_dists[0].size == 0:
-		return state.shape[0] - m_row
-	return obj_vert_dists[0][0]
+		return state.shape[0] - m_row - 1
+	return obj_vert_dists[0][0] - 1
 
-# Returns the number of rows from Mario to the roof
-# Return None if no roof is vertically above Mario
+# Returns the number of rows between Mario and the roof (0 if next level is roof)
+# if no roof above Mario, return number of rows between Mario and offscreen
+# Return None if Mario not on screen
 # Always perform None check on return val
-def distanceFromRoof(state):
+def roofVertDistance(state):
 	mario_pos = marioPosition(state)
 	if mario_pos is None:
 		return None
@@ -41,12 +43,12 @@ def distanceFromRoof(state):
 	obj_vert_dists = np.nonzero(col_contents == 1)
 
 	if obj_vert_dists[0].size == 0:
-		return m_row + 1
-	return m_row - obj_vert_dists[0][-1]
+		return m_row
+	return m_row - obj_vert_dists[0][-1] - 1
 
 # Returns the # of columns to the right of Mario for which
 # there exists at least one object (ground=1) at a height lower than Mario
-def rightGroundDistance(state):
+def groundRightDistance(state):
 	mario_pos = marioPosition(state)
 	if mario_pos is None:
 		return None
@@ -54,8 +56,8 @@ def rightGroundDistance(state):
 
 	dist = 0
 
-	if m_row < state.shape[0]:
-		for col in xrange(m_col, state.shape[1]):
+	if m_row < state.shape[0] - 1 and m_col < state.shape[1] - 1:
+		for col in xrange(m_col + 1, state.shape[1]):
 			col_contents = state[m_row + 1:, col]
 			obj_vert_dists = np.nonzero(col_contents == 1)
 
@@ -66,7 +68,7 @@ def rightGroundDistance(state):
 
 # Returns the # of columns to the left of Mario for which
 # there exists at least one object (ground=1) at a height lower than Mario
-def leftGroundDistance(state):
+def groundLeftDistance(state):
 	mario_pos = marioPosition(state)
 	if mario_pos is None:
 		return None
@@ -74,7 +76,7 @@ def leftGroundDistance(state):
 
 	dist = 0
 
-	if m_row < state.shape[0]:
+	if m_row < state.shape[0] - 1:
 		for col in xrange(0, m_col):
 			col_contents = state[m_row + 1:, col]
 			obj_vert_dists = np.nonzero(col_contents == 1)
@@ -83,3 +85,38 @@ def leftGroundDistance(state):
 				return dist
 			dist += 1
 	return dist
+
+def test(state, left, right, below, above):
+	assert groundLeftDistance(state) == left
+	assert groundRightDistance(state) == right
+	assert groundVertDistance(state) == below
+	assert roofVertDistance(state) == above
+
+def main():
+	print "Running tests"
+	a = np.array([[1,1,1], [3,0,0], [1,1,1]])
+	b = np.array([[1,1,1], [0,3,0], [1,1,1]])
+	c = np.array([[1,1,1], [0,0,3], [1,1,1]])
+
+	test(a, 0, 2, 0, 0)
+	test(b, 1, 1, 0, 0)
+	test(c, 2, 0, 0, 0)
+
+	a = np.array([[1,1,1], [3,0,0], [0,0,0]])
+	b = np.array([[1,1,1], [0,3,0], [0,0,0]])
+	c = np.array([[1,1,1], [0,0,3], [0,0,0]])
+
+	test(a, 0, 0, 1, 0)
+	test(b, 0, 0, 1, 0)
+	test(c, 0, 0, 1, 0)
+
+	a = np.array([[0,0,0], [3,0,0], [1,1,1]])
+	b = np.array([[0,0,0], [0,3,0], [1,1,1]])
+	c = np.array([[0,0,0], [0,0,3], [1,1,1]])
+
+	test(a, 0, 2, 0, 1)
+	test(b, 1, 1, 0, 1)
+	test(c, 2, 0, 0, 1)
+	print "All tests passed!"
+
+if __name__ == "__main__": main()
