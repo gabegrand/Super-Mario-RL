@@ -76,8 +76,8 @@ def groundLeftDistance(state):
 
 	dist = 0
 
-	if m_row < state.shape[0] - 1:
-		for col in xrange(0, m_col):
+	if m_row < state.shape[0] - 1 and m_col > 0:
+		for col in xrange(m_col - 1, -1, -1):
 			col_contents = state[m_row + 1:, col]
 			obj_vert_dists = np.nonzero(col_contents == 1)
 
@@ -117,6 +117,23 @@ def main():
 	test(a, 0, 2, 0, 1)
 	test(b, 1, 1, 0, 1)
 	test(c, 2, 0, 0, 1)
+
+	a = np.array([[1,0,1], [3,0,0], [1,0,1]])
+	b = np.array([[1,0,1], [0,3,0], [1,0,1]])
+	c = np.array([[1,0,1], [0,0,3], [1,0,1]])
+
+	test(a, 0, 0, 0, 0)
+	test(b, 1, 1, 1, 1)
+	test(c, 0, 0, 0, 0)
+
+	a = np.array([[0,0,0,0,0], [0,0,0,0,0], [0,1,3,1,0], [0,0,0,1,0], [1,1,0,0,0]])
+	b = np.array([[0,1,0,0,0], [1,3,1,0,0], [0,0,0,0,0], [0,0,0,0,0], [0,1,1,1,1]])
+	c = np.array([[0,0,0,1,0], [0,0,0,0,0], [0,0,0,0,0], [0,0,1,3,1], [0,1,1,0,0]])
+
+	test(a, 2, 1, 2, 2)
+	test(b, 0, 3, 2, 0)
+	test(c, 2, 0, 1, 2)
+
 	print "All tests passed!"
 
 if __name__ == "__main__": main()
