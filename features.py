@@ -86,6 +86,22 @@ def groundLeftDistance(state):
 			dist += 1
 	return dist
 
+# Return the number of seconds remaining in the level
+def timeRemaining(info):
+	if 'time' in info.keys():
+		return info['time']
+	print "WARNING: Time not in info dict"
+	return None
+
+# Return the horizontal distance moved from the start
+def distanceFromStart(info):
+	if 'distance' in info.keys():
+		return info['distance']
+	print "WARNING: Distance not in info dict"
+	return None
+
+# TESTING FUNCTIONS
+
 def test(state, left, right, below, above):
 	assert groundLeftDistance(state) == left
 	assert groundRightDistance(state) == right
