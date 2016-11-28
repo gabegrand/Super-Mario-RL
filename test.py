@@ -6,6 +6,7 @@ from ppaquette_gym_super_mario import wrappers
 import multiprocessing
 from qAgent import QLearningAgent
 import hyperparameters as hp
+import features as ft
 
 # Initialize the correct agent
 agent = None
@@ -61,19 +62,14 @@ while i <= hp.TRAINING_ITERATIONS:
     # Sample first action randomly
     action = env.action_space.sample()
     state, reward, done, info = env.step(action)
-    state = str(state)
 
     while not done:
 
         # Choose action according to Q
-        action = agent.getAction(state)
+        action = agent.getAction(str(state))
 
         # Take action
         newState, reward, done, info = env.step(action)
-
-        # Convert numpy arrays to strings for storage in dict
-        state = str(state)
-        newState = str(newState)
 
         # If Mario dies, punish
         if 'life' in info.keys() and info['life'] == 0:
@@ -88,7 +84,7 @@ while i <= hp.TRAINING_ITERATIONS:
             curr_score = int(info['score'])
 
         # Update Q values
-        agent.update(state, action, newState, reward)
+        agent.update(str(state), action, str(newState), reward)
 
         # Advance the state
         state = newState
