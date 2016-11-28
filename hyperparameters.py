@@ -10,7 +10,7 @@ LOAD_FROM = '2016-11-23-18-58-world-1-4-iter-91.pickle'
 # How often to save Q values
 SAVE_EVERY = 10
 
-# 0 is Q-Learning, 1 is POMDP
+# 0 is Q-Learning, should 1 be approximate Q?
 AGENT_TYPE = 0
 
 # Q Learning Agent Parameters

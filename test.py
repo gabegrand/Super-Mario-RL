@@ -5,15 +5,12 @@ import gym_pull
 from ppaquette_gym_super_mario import wrappers
 import multiprocessing
 from qAgent import QLearningAgent
-from pomdpAgent import PomdpAgent
 import hyperparameters as hp
 
 # Initialize the correct agent
 agent = None
 if hp.AGENT_TYPE == 0:
     agent = QLearningAgent()
-elif hp.AGENT_TYPE == 1:
-    agent = PomdpAgent()
 else:
     raise ValueError("Invalid AGENT_TYPE in hyperparameters")
 
