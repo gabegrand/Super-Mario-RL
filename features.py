@@ -86,18 +86,35 @@ def groundLeftDistance(state):
 			dist += 1
 	return dist
 
+# Return the number of enemies on the screen
+def numEnemiesOnScreen(state):
+	rows, cols = np.nonzero(state == 2)
+	if rows.size == 0 or cols.size == 0:
+		return 0
+	return len(rows)
+
+# Return the status of mario
+# 0 = small, 1 = big, 2+ = fireball
+def marioStatus(info):
+	return _fetchEntry(info, "player_status")
+
 # Return the number of seconds remaining in the level
 def timeRemaining(info):
-	if 'time' in info.keys():
-		return info['time']
-	print "WARNING: Time not in info dict"
-	return None
+	return _fetchEntry(info, "time")
 
 # Return the horizontal distance moved from the start
 def distanceFromStart(info):
-	if 'distance' in info.keys():
-		return info['distance']
-	print "WARNING: Distance not in info dict"
+	return _fetchEntry(info, "distance")
+
+# PRIVATE FUNCTIONS
+
+# Return the value for key in info dict, printing errors where applicable
+def _fetchEntry(info, key):
+	if key in info.keys():
+		if info[key] == -1:
+			print "WARNING: " + key + " unknown in info dict"
+		return info[key]
+	print "WARNING: " + key + " not in info dict"
 	return None
 
 # TESTING FUNCTIONS
