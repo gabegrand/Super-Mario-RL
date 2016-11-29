@@ -187,8 +187,6 @@ def timeRemaining(info):
 def distanceFromStart(info):
 	return _fetchEntry(info, "distance")
 
-#x-axis velocity
-
 # PRIVATE FUNCTIONS
 
 # Return the value for key in info dict, printing errors where applicable
