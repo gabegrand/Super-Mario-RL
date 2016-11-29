@@ -62,6 +62,7 @@ while i <= hp.TRAINING_ITERATIONS:
     # Sample first action randomly
     action = env.action_space.sample()
     state, reward, done, info = env.step(action)
+    prev_mpos = ft.marioPosition(state)
 
     while not done:
 
@@ -70,6 +71,15 @@ while i <= hp.TRAINING_ITERATIONS:
 
         # Take action
         newState, reward, done, info = env.step(action)
+
+        curr_mpos = ft.marioPosition(newState)
+
+        # IMPORTANT: Only calc features if Mario is on the map!
+        # TODO We're updating Q even when Mario is not on map, should we be though?
+        if curr_mpos is not None:
+            print prev_mpos
+            print curr_mpos
+            print ft.marioDirection(prev_mpos, curr_mpos)
 
         # If Mario dies, punish
         if 'life' in info.keys() and info['life'] == 0:
@@ -88,6 +98,7 @@ while i <= hp.TRAINING_ITERATIONS:
 
         # Advance the state
         state = newState
+        prev_mpos = curr_mpos
 
     # Handle case where game gets stuck
     if 'ignore' in info.keys() and info['ignore'] == True:
