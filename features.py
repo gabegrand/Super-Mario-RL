@@ -291,25 +291,92 @@ def _fetchEntry(info, key):
 	print "WARNING: " + key + " not in info dict"
 	return None
 
-# fails if Mario not on screen
+# version of marioPosition that fails if Mario not on screen
 def _marioPosition(state):
 	rows, cols = np.nonzero(state == 3)
 	assert rows.size != 0 and cols.size != 0
 	return rows[0], cols[0]
 
-# TESTING FUNCTIONS
-
-def test_bounds(state, left, right, above, below):
+def _test_bounds(state, left, right, above, below):
 	assert groundLeftDistance(state) == left
 	assert groundRightDistance(state) == right
 	assert roofVertDistance(state) == above
 	assert groundVertDistance(state) == below
 
-def test_enemy_dists(state, dLeft, dRight, dUp, dDown):
+def _test_enemy_dists(state, dLeft, dRight, dUp, dDown):
 	assert distLeftEnemy(state) == dLeft
 	assert distRightEnemy(state) == dRight
 	assert distUpEnemy(state) == dUp
 	assert distDownEnemy(state) == dDown
+
+def _testEnemyOnScreen():
+	print "Testing enemy on screen"
+	a = np.array([[1,1,1], [3,1,0], [0,2,1]])
+	b = np.array([[1,2,1], [0,3,0], [1,1,2]])
+	c = np.array([[1,3,1], [0,0,0], [1,1,1]])
+	d = np.array([[3,0,2], [0,0,1], [0,1,1]])
+	e = np.array([[1,0,1], [0,0,1], [2,2,3]])
+
+	assert enemyOnScreen(a) == 1
+	assert enemyOnScreen(b) == 1
+	assert enemyOnScreen(c) == 0
+	assert enemyOnScreen(d) == 1
+	assert enemyOnScreen(e) == 1
+	print "All tests passed!"
+
+
+def _testCanMoveLeft():
+	print "Testing can move left"
+	a = np.array([[1,1,1], [3,0,0], [1,1,1]])
+	b = np.array([[1,1,1], [0,3,0], [1,1,1]])
+	c = np.array([[1,1,1], [0,1,3], [1,1,1]])
+
+	assert canMoveLeft(a) == 0
+	assert canMoveLeft(b) == 1
+	assert canMoveLeft(c) == 0
+	print "All tests passed!"
+
+
+def _testCanMoveRight():
+	print "Testing can move right"
+	a = np.array([[1,1,1], [3,1,0], [1,1,1]])
+	b = np.array([[1,1,1], [0,3,0], [1,1,1]])
+	c = np.array([[1,1,1], [0,1,3], [1,1,1]])
+
+	assert canMoveRight(a) == 0
+	assert canMoveRight(b) == 1
+	assert canMoveRight(c) == 1
+	print "All tests passed!"
+
+def _testCanJump():
+	print "Testing can jump"
+	a = np.array([[1,1,1], [3,1,0], [1,1,1]])
+	b = np.array([[1,0,1], [0,3,0], [1,1,1]])
+	c = np.array([[1,1,1], [0,1,0], [1,1,3]])
+	d = np.array([[1,0,1], [0,0,1], [1,1,3]])
+	e = np.array([[1,3,1], [0,0,1], [1,1,1]])
+
+	assert canJump(a) == 0
+	assert canJump(b) == 1
+	assert canJump(c) == 1
+	assert canJump(d) == 0
+	assert canJump(e) == 1
+	print "All tests passed!"
+
+def _testGroundBelow():
+	print "Testing ground below"
+	a = np.array([[1,1,1], [3,1,0], [0,1,1]])
+	b = np.array([[1,0,1], [0,3,0], [1,1,1]])
+	c = np.array([[1,3,1], [0,0,0], [1,1,1]])
+	d = np.array([[3,0,1], [0,0,1], [0,1,1]])
+	e = np.array([[1,0,1], [0,0,1], [0,1,3]])
+
+	assert groundBelow(a) == 0
+	assert groundBelow(b) == 1
+	assert groundBelow(c) == 1
+	assert groundBelow(d) == 0
+	assert groundBelow(e) == 0
+	print "All tests passed!"
 
 def main():
 	print "Running boundary tests"
@@ -317,43 +384,43 @@ def main():
 	b = np.array([[1,1,1], [0,3,0], [1,1,1]])
 	c = np.array([[1,1,1], [0,0,3], [1,1,1]])
 
-	test_bounds(a, 0, 2, 1, 1)
-	test_bounds(b, 1, 1, 1, 1)
-	test_bounds(c, 2, 0, 1, 1)
+	_test_bounds(a, 0, 2, 1, 1)
+	_test_bounds(b, 1, 1, 1, 1)
+	_test_bounds(c, 2, 0, 1, 1)
 
 	a = np.array([[1,1,1], [3,0,0], [0,0,0]])
 	b = np.array([[1,1,1], [0,3,0], [0,0,0]])
 	c = np.array([[1,1,1], [0,0,3], [0,0,0]])
 
-	test_bounds(a, 0, 0, 1, 2)
-	test_bounds(b, 0, 0, 1, 2)
-	test_bounds(c, 0, 0, 1, 2)
+	_test_bounds(a, 0, 0, 1, 2)
+	_test_bounds(b, 0, 0, 1, 2)
+	_test_bounds(c, 0, 0, 1, 2)
 
 	a = np.array([[0,0,0], [3,0,0], [1,1,1]])
 	b = np.array([[0,0,0], [0,3,0], [1,1,1]])
 	c = np.array([[0,0,0], [0,0,3], [1,1,1]])
 
-	test_bounds(a, 0, 2, 2, 1)
-	test_bounds(b, 1, 1, 2, 1)
-	test_bounds(c, 2, 0, 2, 1)
+	_test_bounds(a, 0, 2, 2, 1)
+	_test_bounds(b, 1, 1, 2, 1)
+	_test_bounds(c, 2, 0, 2, 1)
 
 	a = np.array([[1,0,1], [3,0,0], [1,0,1]])
 	b = np.array([[1,0,1], [0,3,0], [1,0,1]])
 	c = np.array([[1,0,1], [0,0,3], [1,0,1]])
 
-	test_bounds(a, 0, 0, 1, 1)
-	test_bounds(b, 1, 1, 2, 2)
-	test_bounds(c, 0, 0, 1, 1)
+	_test_bounds(a, 0, 0, 1, 1)
+	_test_bounds(b, 1, 1, 2, 2)
+	_test_bounds(c, 0, 0, 1, 1)
 
 	a = np.array([[0,0,0,0,0], [0,0,0,0,0], [0,1,3,1,0], [0,0,0,1,0], [1,1,0,0,0]])
 	b = np.array([[0,1,0,0,0], [1,3,1,0,0], [0,0,0,0,0], [0,0,0,0,0], [0,1,1,1,1]])
 	c = np.array([[0,0,0,1,0], [0,0,0,0,0], [0,0,0,0,0], [0,0,1,3,1], [0,1,1,0,0]])
 
-	test_bounds(a, 2, 1, 3, 3)
-	test_bounds(b, 0, 3, 1, 3)
-	test_bounds(c, 2, 0, 3, 2)
+	_test_bounds(a, 2, 1, 3, 3)
+	_test_bounds(b, 0, 3, 1, 3)
+	_test_bounds(c, 2, 0, 3, 2)
 
-	print "Passed all boundary tests!"
+	print "All tests passed!"
 
 	print "Running enemy distance tests"
 
@@ -361,28 +428,34 @@ def main():
 	b = np.array([[1,1,1], [0,3,0], [1,1,1]])
 	c = np.array([[1,1,1], [1,1,1], [0,0,3]])
 
-	test_enemy_dists(a, 1, 3, 2, 2)
-	test_enemy_dists(b, 2, 2, 2, 2)
-	test_enemy_dists(c, 3, 1, 3, 1)
+	_test_enemy_dists(a, 1, 3, 2, 2)
+	_test_enemy_dists(b, 2, 2, 2, 2)
+	_test_enemy_dists(c, 3, 1, 3, 1)
 
 	a = np.array([[1,1,1], [3,0,0], [0,0,2]])
 	b = np.array([[0,2,0], [0,3,0], [1,1,1]])
 	c = np.array([[1,1,1], [0,0,3], [2,0,0]])
 
-	test_enemy_dists(a, 1, 2, 2, 1)
-	test_enemy_dists(b, 0, 0, 1, 2)
-	test_enemy_dists(c, 2, 1, 2, 1)
+	_test_enemy_dists(a, 1, 2, 2, 1)
+	_test_enemy_dists(b, 0, 0, 1, 2)
+	_test_enemy_dists(c, 2, 1, 2, 1)
 
 	a = np.array([[1,2,0], [1,3,0], [1,2,1]])
 	b = np.array([[0,0,0], [2,3,0], [2,1,1]])
 	c = np.array([[0,0,1], [2,3,2], [1,1,1]])
 
-	test_enemy_dists(a, 0, 0, 1, 1)
-	test_enemy_dists(b, 1, 2, 0, 0)
-	test_enemy_dists(c, 1, 1, 0, 0)
-
-	print "Passed all enemy distance tests"
+	_test_enemy_dists(a, 0, 0, 1, 1)
+	_test_enemy_dists(b, 1, 2, 0, 0)
+	_test_enemy_dists(c, 1, 1, 0, 0)
 
 	print "All tests passed!"
+
+	_testCanJump()
+	_testCanMoveLeft()
+	_testCanMoveRight()
+	_testEnemyOnScreen()
+	_testGroundBelow()
+
+	print "End of tests"
 
 if __name__ == "__main__": main()
