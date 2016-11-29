@@ -3,14 +3,38 @@ import sys
 
 
 # Returns a vector (actually a util.Counter object) of features
-def getFeatures(prev_state, state):
-	features = util.Counter()
+def getFeatures(prev_state, state, info):
 
 	# Get Mario's position
 	prev_mpos = marioPosition(prev_state)
 	curr_mpos = marioPosition(state)
 
-	features[0] = "TODO"
+	# Make sure Mario is on the screen
+	if not (prev_state and state):
+		print "getFeatures: Mario position is None"
+		return None
+
+	features = util.Counter()
+
+	features['movingUp'] = None
+	features['movingDown'] = None
+	features['movingLeft'] = None
+	features['movingRight'] = None
+	features['groundVertDistance'] = groundVertDistance(state)
+	features['roofVertDistance'] = roofVertDistance(state)
+	features['groundLeftDistance'] = groundLeftDistance(state)
+	features['groundRightDistance'] = groundRightDistance(state)
+	features['distLeftEnemy'] = distLeftEnemy(state)
+	features['distRightEnemy'] = distRightEnemy(state)
+	features['distUpEnemy'] = distUpEnemy(state)
+	features['distDownEnemy'] = distDownEnemy(state)
+	features['enemyOnScreen'] = enemyOnScreen(state)
+	features['groundBelow'] = groundBelow(state)
+	features['canMoveLeft'] = canMoveLeft(state)
+	features['canMoveRight'] = canMoveRight(state)
+	features['canMoveUp'] = canMoveLeft(state)
+	features['canMoveDown'] = canMoveLeft(state)
+	features['marioStatus'] = marioStatus(info)
 
 	return features
 

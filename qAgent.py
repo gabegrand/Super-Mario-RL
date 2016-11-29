@@ -113,8 +113,7 @@ class ApproxQAgent(QLearningAgent):
     def getQValue(self, state, action):
         return self.getWeights() * self.featExtractor.getFeatures(state, action)
 
-"""
-    def update(self, state, action, nextState, reward):
+    def update(self, features, action, nextState, reward):
         # Compute value of nextState
         nextStateValue = self.computeValueFromQValues(nextState)
 
@@ -124,4 +123,3 @@ class ApproxQAgent(QLearningAgent):
         # Update each weight iteratively based on feature
         for feature in feature_dict:
             self.weights[feature] = self.weights[feature] + self.alpha * ((reward + self.discount * nextStateValue) - self.getQValue(state, action)) * feature_dict[feature]
-"""

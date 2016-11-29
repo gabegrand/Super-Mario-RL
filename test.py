@@ -63,7 +63,6 @@ while i <= hp.TRAINING_ITERATIONS:
     # Sample first action randomly
     action = env.action_space.sample()
     state, reward, done, info = env.step(action)
-    prev_mpos = ft.marioPosition(state)
 
     while not done:
 
@@ -72,18 +71,6 @@ while i <= hp.TRAINING_ITERATIONS:
 
         # Take action
         newState, reward, done, info = env.step(action)
-
-        curr_mpos = ft.marioPosition(newState)
-
-        # IMPORTANT: Only calc features if Mario is on the map!
-        # TODO We're updating Q even when Mario is not on map, should we be though?
-        if curr_mpos is not None:
-            if not np.array_equal(state[:, -1], newState[:, -1]):
-                print state[:, -1]
-                print newState[:, -1]
-            print prev_mpos
-            print curr_mpos
-            print ft.marioDirection(prev_mpos, curr_mpos)
 
         # If Mario dies, punish
         if 'life' in info.keys() and info['life'] == 0:
@@ -96,6 +83,10 @@ while i <= hp.TRAINING_ITERATIONS:
             print("Bling! Score up by %d" % delta)
             reward += delta
             curr_score = int(info['score'])
+
+        # Compute features
+        if ft.marioPosition is not None:
+            features = ft.getFeatures(state, newState, info)
 
         # Update Q values
         agent.update(str(state), action, str(newState), reward)
