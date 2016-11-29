@@ -4,6 +4,8 @@ import sys
 # Returns mario's position as row, col pair
 # Returns None if Mario not on map
 # Always perform None check on return val
+# For functions in this file, use _marioPosition, since functions
+# should only be called if mario is on screen
 def marioPosition(state):
 	rows, cols = np.nonzero(state == 3)
 	if rows.size == 0 or cols.size == 0:
@@ -11,49 +13,88 @@ def marioPosition(state):
 		return None
 	return rows[0], cols[0]
 
-# Returns the number of rows between Mario and the ground (0 if next level is ground)
-# if no ground below Mario, return number of rows between Mario and offscreen
-# Return None if Mario not on screen
-# Always perform None check on return val
+# Returns a number corresponding to Mario's direction
+# 0 - stationary, 1 - up, 2 - up/right
+# 3 - right, 4 - down/right, 5 - down
+# 6 - down/left, 7 - left, 8 - up/left
+# TODO what about case where mario moves from right edge of screen to left?
+# is this possible?
+# TODO direction assignment might not be linear, talk to Gabe
+# TODO screen moves, so moving a column to the right doesn't necessarily mean right
+def marioDirection(prev_mpos, curr_mpos):
+	assert curr_mpos is not None
+	if prev_mpos is None:
+		return 0
+	prev_row, prev_col = prev_mpos
+	curr_row, curr_col = curr_mpos
+
+	if curr_row == prev_row:
+		# stationary		
+		if curr_col == prev_col:
+			return 0
+		# right
+		elif curr_col > prev_col:
+			return 3
+		# left (curr_col < prev_col)
+		else:
+			return 7
+
+	elif curr_row > prev_row:
+		# down
+		if curr_col == prev_col:
+			return 5
+		# down-right
+		elif curr_col > prev_col:
+			return 4
+		# down-left (curr_col < prev_col)
+		else:
+			return 6
+
+	# curr_row < prev_row
+	else:
+		# up
+		if curr_col == prev_col:
+			return 1
+		# up-right
+		elif curr_col > prev_col:
+			return 2
+		# up-left (curr_col < prev_col)
+		else:
+			return 8
+
+# Returns the vert distance from Mario to the ground
+# if no ground below Mario, return number of rows to offscreen
+# Only call if Mario is on screen
 def groundVertDistance(state):
-	mario_pos = marioPosition(state)
-	if mario_pos is None:
-		return None
-	m_row, m_col = mario_pos
+	m_row, m_col = _marioPosition(state)
 
 	# get the rows in Mario's column with objects, if any
 	col_contents = state[m_row:, m_col]
 	obj_vert_dists = np.nonzero(col_contents == 1)
 
 	if obj_vert_dists[0].size == 0:
-		return state.shape[0] - m_row - 1
-	return obj_vert_dists[0][0] - 1
+		return state.shape[0] - m_row
+	return obj_vert_dists[0][0]
 
 # Returns the number of rows between Mario and the roof (0 if next level is roof)
 # if no roof above Mario, return number of rows between Mario and offscreen
-# Return None if Mario not on screen
-# Always perform None check on return val
+# Only call if Mario is on screen
 def roofVertDistance(state):
-	mario_pos = marioPosition(state)
-	if mario_pos is None:
-		return None
-	m_row, m_col = mario_pos
+	m_row, m_col = _marioPosition(state)
 
 	# get the rows in Mario's column with objects, if any
 	col_contents = state[:m_row, m_col]
 	obj_vert_dists = np.nonzero(col_contents == 1)
 
 	if obj_vert_dists[0].size == 0:
-		return m_row
-	return m_row - obj_vert_dists[0][-1] - 1
+		return m_row + 1
+	return m_row - obj_vert_dists[0][-1]
 
 # Returns the # of columns to the right of Mario for which
 # there exists at least one object (ground=1) at a height lower than Mario
+# Only call if Mario is on screen
 def groundRightDistance(state):
-	mario_pos = marioPosition(state)
-	if mario_pos is None:
-		return None
-	m_row, m_col = mario_pos
+	m_row, m_col = _marioPosition(state)
 
 	dist = 0
 
@@ -69,11 +110,9 @@ def groundRightDistance(state):
 
 # Returns the # of columns to the left of Mario for which
 # there exists at least one object (ground=1) at a height lower than Mario
+# Only call if Mario is on screen
 def groundLeftDistance(state):
-	mario_pos = marioPosition(state)
-	if mario_pos is None:
-		return None
-	m_row, m_col = mario_pos
+	m_row, m_col = _marioPosition(state)
 
 	dist = 0
 
@@ -87,15 +126,38 @@ def groundLeftDistance(state):
 			dist += 1
 	return dist
 
-# horizontal distance to nearest enemy (right is positive)
-def horDistEnemy(state):
-	mario_pos = marioPosition(state)
-	if mario_pos is None:
-		return None
-	m_row, m_col = mario_pos
+
+# left distance to nearest enemy (dist to edge of screen if no enemy)
+# Only call if Mario is on screen
+def distLeftEnemy(state):
+	m_row, m_col = _marioPosition(state)
+
+	# if no enemies, return left horizontal distance remaining on screen
+	e_rows, e_cols = np.nonzero(state[:, :m_col + 1] == 2)
+	if e_rows.size == 0 or e_cols.size == 0:
+		return m_col + 1
+
+	# find the nearest enemy
+	nearest = sys.maxsize
+
+	# look to the left
+	for col_num in xrange(m_col, -1, -1):
+		col_contents = state[:, col_num]
+		enemies = np.nonzero(col_contents == 2)
+		# if we've found an enemy, we're as close as we'll get
+		if enemies[0].size > 0:
+			nearest = m_col - col_num
+			break
+
+	return nearest
+
+# right distance to nearest enemy (dist to edge of screen if no enemy)
+# Only call if Mario is on screen
+def distRightEnemy(state):
+	m_row, m_col = _marioPosition(state)
 
 	# if no enemies, return right horizontal distance remaining on screen
-	e_rows, e_cols = np.nonzero(state == 2)
+	e_rows, e_cols = np.nonzero(state[:, m_col:] == 2)
 	if e_rows.size == 0 or e_cols.size == 0:
 		return state.shape[1] - m_col
 
@@ -110,32 +172,40 @@ def horDistEnemy(state):
 			nearest = col_num - m_col
 			break
 
-	# look to the left
-	for col_num in xrange(m_col - 1, -1, -1):
-		# if we're already farther away than nearest, break
-		if abs(m_col - col_num) > nearest:
-			break
+	return nearest
 
-		col_contents = state[:, col_num]
-		enemies = np.nonzero(col_contents == 2)
+# up distance to nearest enemy (dist to edge of screen if no enemy)
+# Only call if Mario is on screen
+def distUpEnemy(state):
+	m_row, m_col = _marioPosition(state)
+
+	# if no enemies, return up vert dist to edge
+	e_rows, e_cols = np.nonzero(state[:m_row + 1, :] == 2)
+	if e_rows.size == 0 or e_cols.size == 0:
+		return m_row + 1
+
+	# find the nearest enemy
+	nearest = sys.maxsize
+
+	# look above
+	for row_num in xrange(m_row, -1, -1):
+		row_contents = state[row_num, :]
+		enemies = np.nonzero(row_contents == 2)
 
 		# if we've found an enemy, we're as close as we'll get
 		if enemies[0].size > 0:
-			if abs(m_col - col_num) < nearest:
-				nearest = col_num - m_col
+			nearest = m_row - row_num
 			break
 
 	return nearest
 
-# horizontal distance to nearest enemy (down is positive b/c of indexing)
-def vertDistEnemy(state):
-	mario_pos = marioPosition(state)
-	if mario_pos is None:
-		return None
-	m_row, m_col = mario_pos
+# down distance to nearest enemy (dist to edge of screen if no enemy)
+# Only call if Mario is on screen
+def distDownEnemy(state):
+	m_row, m_col = _marioPosition(state)
 
-	# if no enemies, return vertical distance to bottom of screen
-	e_rows, e_cols = np.nonzero(state == 2)
+	# if no enemies, return down vert dist to edge
+	e_rows, e_cols = np.nonzero(state[m_row:, :] == 2)
 	if e_rows.size == 0 or e_cols.size == 0:
 		return state.shape[0] - m_row
 
@@ -150,29 +220,60 @@ def vertDistEnemy(state):
 			nearest = row_num - m_row
 			break
 
-	# look above
-	for row_num in xrange(m_row - 1, -1, -1):
-		# if we're already farther away than nearest, break
-		if abs(m_row - row_num) > nearest:
-			break
-
-		row_contents = state[row_num, :]
-		enemies = np.nonzero(row_contents == 2)
-
-		# if we've found an enemy, we're as close as we'll get
-		if enemies[0].size > 0:
-			if abs(m_row - row_num) < nearest:
-				nearest = row_num - m_row
-			break
-
 	return nearest
 
-# Return the number of enemies on the screen
-def numEnemiesOnScreen(state):
+# Return whether there is one or more enemy on screen (1=true)
+def enemyOnScreen(state):
 	rows, cols = np.nonzero(state == 2)
 	if rows.size == 0 or cols.size == 0:
 		return 0
-	return len(rows)
+	return 1
+
+# Return whether there is ground below Mario (1=true)
+# Only call if Mario is on screen
+def groundBelow(state):
+	m_row, m_col = _marioPosition(state)
+
+	# get the rows in Mario's column with objects, if any
+	col_contents = state[m_row:, m_col]
+	ground_below = np.nonzero(col_contents == 1)
+
+	if ground_below[0].size == 0:
+		return 0
+	return 1
+
+# Return whether Mario can jump in his position (1=true)
+# Only call if Mario is on screen
+def canJump(state):
+	m_row, m_col = _marioPosition(state)
+
+	if m_row > 0:
+		if state[m_row-1, m_col] == 0:
+			return 1
+		return 0
+	return 1
+
+# Return whether Mario can move right in his position (1=true)
+# Only call if Mario is on screen
+def canMoveRight(state):
+	m_row, m_col = _marioPosition(state)
+
+	if m_col < state.shape[1] - 1:
+		if state[m_row, m_col + 1] == 0:
+			return 1
+		return 0
+	return 1
+
+# Return whether Mario can move left in his position (1=true)
+# Only call if Mario is on screen
+def canMoveLeft(state):
+	m_row, m_col = _marioPosition(state)
+
+	if m_col > 0:
+		if state[m_row, m_col - 1] == 0:
+			return 1
+		return 0
+	return 0
 
 # Return the status of mario
 # 0 = small, 1 = big, 2+ = fireball
@@ -182,10 +283,6 @@ def marioStatus(info):
 # Return the number of seconds remaining in the level
 def timeRemaining(info):
 	return _fetchEntry(info, "time")
-
-# Return the horizontal distance moved from the start
-def distanceFromStart(info):
-	return _fetchEntry(info, "distance")
 
 # PRIVATE FUNCTIONS
 
@@ -198,89 +295,231 @@ def _fetchEntry(info, key):
 	print "WARNING: " + key + " not in info dict"
 	return None
 
-# TESTING FUNCTIONS
+# version of marioPosition that fails if Mario not on screen
+def _marioPosition(state):
+	rows, cols = np.nonzero(state == 3)
+	assert rows.size != 0 and cols.size != 0
+	return rows[0], cols[0]
 
-def test_bounds(state, left, right, below, above):
+# TESTING
+
+def _testMarioPosition():
+	a = np.array([[1,1,1], [1,1,0], [0,2,1]])
+	b = np.array([[1,2,1], [0,0,3], [1,1,2]])
+	assert marioPosition(a) == None
+	assert marioPosition(b) == (1, 2)
+
+def _testMarioDirection():
+	#Init
+	prev = None
+	curr = (1,1)
+	assert marioDirection(prev, curr) == 0
+	# Up
+	prev = (1,1)
+	curr = (0,1)
+	assert marioDirection(prev, curr) == 1
+	# Up/right
+	prev = (1,0)
+	curr = (0,1)
+	assert marioDirection(prev, curr) == 2
+	# Right
+	prev = (0,0)
+	curr = (0,1)
+	assert marioDirection(prev, curr) == 3
+	# Down/right
+	prev = (0,0)
+	curr = (1,1)
+	assert marioDirection(prev, curr) == 4
+	# Down
+	prev = (0,0)
+	curr = (1,0)
+	assert marioDirection(prev, curr) == 5
+	# Down/left
+	prev = (0,1)
+	curr = (1,0)
+	assert marioDirection(prev, curr) == 6
+	# Left
+	prev = (1,1)
+	curr = (1,0)
+	assert marioDirection(prev, curr) == 7
+	# Up/Left
+	prev = (1,1)
+	curr = (0,0)
+	assert marioDirection(prev, curr) == 8
+	# Stationary
+	prev = (1,1)
+	curr = (1,1)
+	assert marioDirection(prev, curr) == 0
+
+def _testMarioStatus():
+	info = {'time': 3, 'player_status': -1}
+	assert marioStatus(info) == -1
+	info = {}
+	assert marioStatus(info) == None
+	info = {'player_status': 2}
+	assert marioStatus(info) == 2
+
+def _testTimeRemaining():
+	info = {'time': -1, 'player_status': 1}
+	assert timeRemaining(info) == -1
+	info = {'player_status': 1}
+	assert timeRemaining(info) == None
+	info = {'time': 2}
+	assert timeRemaining(info) == 2
+
+def _test_bounds(state, left, right, above, below):
 	assert groundLeftDistance(state) == left
 	assert groundRightDistance(state) == right
-	assert groundVertDistance(state) == below
 	assert roofVertDistance(state) == above
+	assert groundVertDistance(state) == below
 
-def test_enemy_dists(state, hDistEnemy, vDistEnemy):
-	assert horDistEnemy(state) == hDistEnemy
-	assert vertDistEnemy(state) == vDistEnemy
+def _test_enemy_dists(state, dLeft, dRight, dUp, dDown):
+	assert distLeftEnemy(state) == dLeft
+	assert distRightEnemy(state) == dRight
+	assert distUpEnemy(state) == dUp
+	assert distDownEnemy(state) == dDown
+
+def _testEnemyOnScreen():
+	a = np.array([[1,1,1], [3,1,0], [0,2,1]])
+	b = np.array([[1,2,1], [0,3,0], [1,1,2]])
+	c = np.array([[1,3,1], [0,0,0], [1,1,1]])
+	d = np.array([[3,0,2], [0,0,1], [0,1,1]])
+	e = np.array([[1,0,1], [0,0,1], [2,2,3]])
+
+	assert enemyOnScreen(a) == 1
+	assert enemyOnScreen(b) == 1
+	assert enemyOnScreen(c) == 0
+	assert enemyOnScreen(d) == 1
+	assert enemyOnScreen(e) == 1
+
+# TODO can we move left if at left edge of screen?
+def _testCanMoveLeft():
+	a = np.array([[1,1,1], [3,0,0], [1,1,1]])
+	b = np.array([[1,1,1], [0,3,0], [1,1,1]])
+	c = np.array([[1,1,1], [0,1,3], [1,1,1]])
+
+	assert canMoveLeft(a) == 0
+	assert canMoveLeft(b) == 1
+	assert canMoveLeft(c) == 0
+
+
+def _testCanMoveRight():
+	a = np.array([[1,1,1], [3,1,0], [1,1,1]])
+	b = np.array([[1,1,1], [0,3,0], [1,1,1]])
+	c = np.array([[1,1,1], [0,1,3], [1,1,1]])
+
+	assert canMoveRight(a) == 0
+	assert canMoveRight(b) == 1
+	assert canMoveRight(c) == 1
+
+def _testCanJump():
+	a = np.array([[1,1,1], [3,1,0], [1,1,1]])
+	b = np.array([[1,0,1], [0,3,0], [1,1,1]])
+	c = np.array([[1,1,1], [0,1,0], [1,1,3]])
+	d = np.array([[1,0,1], [0,0,1], [1,1,3]])
+	e = np.array([[1,3,1], [0,0,1], [1,1,1]])
+
+	assert canJump(a) == 0
+	assert canJump(b) == 1
+	assert canJump(c) == 1
+	assert canJump(d) == 0
+	assert canJump(e) == 1
+
+def _testGroundBelow():
+	a = np.array([[1,1,1], [3,1,0], [0,1,1]])
+	b = np.array([[1,0,1], [0,3,0], [1,1,1]])
+	c = np.array([[1,3,1], [0,0,0], [1,1,1]])
+	d = np.array([[3,0,1], [0,0,1], [0,1,1]])
+	e = np.array([[1,0,1], [0,0,1], [0,1,3]])
+
+	assert groundBelow(a) == 0
+	assert groundBelow(b) == 1
+	assert groundBelow(c) == 1
+	assert groundBelow(d) == 0
+	assert groundBelow(e) == 0
 
 def main():
-	print "Running boundary tests"
+	print "Testing feature functions..."
+
+	# state boundary tests
+
 	a = np.array([[1,1,1], [3,0,0], [1,1,1]])
 	b = np.array([[1,1,1], [0,3,0], [1,1,1]])
 	c = np.array([[1,1,1], [0,0,3], [1,1,1]])
 
-	test_bounds(a, 0, 2, 0, 0)
-	test_bounds(b, 1, 1, 0, 0)
-	test_bounds(c, 2, 0, 0, 0)
+	_test_bounds(a, 0, 2, 1, 1)
+	_test_bounds(b, 1, 1, 1, 1)
+	_test_bounds(c, 2, 0, 1, 1)
 
 	a = np.array([[1,1,1], [3,0,0], [0,0,0]])
 	b = np.array([[1,1,1], [0,3,0], [0,0,0]])
 	c = np.array([[1,1,1], [0,0,3], [0,0,0]])
 
-	test_bounds(a, 0, 0, 1, 0)
-	test_bounds(b, 0, 0, 1, 0)
-	test_bounds(c, 0, 0, 1, 0)
+	_test_bounds(a, 0, 0, 1, 2)
+	_test_bounds(b, 0, 0, 1, 2)
+	_test_bounds(c, 0, 0, 1, 2)
 
 	a = np.array([[0,0,0], [3,0,0], [1,1,1]])
 	b = np.array([[0,0,0], [0,3,0], [1,1,1]])
 	c = np.array([[0,0,0], [0,0,3], [1,1,1]])
 
-	test_bounds(a, 0, 2, 0, 1)
-	test_bounds(b, 1, 1, 0, 1)
-	test_bounds(c, 2, 0, 0, 1)
+	_test_bounds(a, 0, 2, 2, 1)
+	_test_bounds(b, 1, 1, 2, 1)
+	_test_bounds(c, 2, 0, 2, 1)
 
 	a = np.array([[1,0,1], [3,0,0], [1,0,1]])
 	b = np.array([[1,0,1], [0,3,0], [1,0,1]])
 	c = np.array([[1,0,1], [0,0,3], [1,0,1]])
 
-	test_bounds(a, 0, 0, 0, 0)
-	test_bounds(b, 1, 1, 1, 1)
-	test_bounds(c, 0, 0, 0, 0)
+	_test_bounds(a, 0, 0, 1, 1)
+	_test_bounds(b, 1, 1, 2, 2)
+	_test_bounds(c, 0, 0, 1, 1)
 
 	a = np.array([[0,0,0,0,0], [0,0,0,0,0], [0,1,3,1,0], [0,0,0,1,0], [1,1,0,0,0]])
 	b = np.array([[0,1,0,0,0], [1,3,1,0,0], [0,0,0,0,0], [0,0,0,0,0], [0,1,1,1,1]])
 	c = np.array([[0,0,0,1,0], [0,0,0,0,0], [0,0,0,0,0], [0,0,1,3,1], [0,1,1,0,0]])
 
-	test_bounds(a, 2, 1, 2, 2)
-	test_bounds(b, 0, 3, 2, 0)
-	test_bounds(c, 2, 0, 1, 2)
+	_test_bounds(a, 2, 1, 3, 3)
+	_test_bounds(b, 0, 3, 1, 3)
+	_test_bounds(c, 2, 0, 3, 2)
 
-	print "Passed all boundary tests!"
-
-	print "Running enemy distance tests"
+	# enemy dist tests
 
 	a = np.array([[1,1,1], [3,0,0], [1,1,1]])
 	b = np.array([[1,1,1], [0,3,0], [1,1,1]])
 	c = np.array([[1,1,1], [1,1,1], [0,0,3]])
 
-	test_enemy_dists(a, 3, 2)
-	test_enemy_dists(b, 2, 2)
-	test_enemy_dists(c, 1, 1)
+	_test_enemy_dists(a, 1, 3, 2, 2)
+	_test_enemy_dists(b, 2, 2, 2, 2)
+	_test_enemy_dists(c, 3, 1, 3, 1)
 
 	a = np.array([[1,1,1], [3,0,0], [0,0,2]])
 	b = np.array([[0,2,0], [0,3,0], [1,1,1]])
 	c = np.array([[1,1,1], [0,0,3], [2,0,0]])
 
-	test_enemy_dists(a, 2, 1)
-	test_enemy_dists(b, 0, -1)
-	test_enemy_dists(c, -2, 1)
+	_test_enemy_dists(a, 1, 2, 2, 1)
+	_test_enemy_dists(b, 0, 0, 1, 2)
+	_test_enemy_dists(c, 2, 1, 2, 1)
 
 	a = np.array([[1,2,0], [1,3,0], [1,2,1]])
 	b = np.array([[0,0,0], [2,3,0], [2,1,1]])
 	c = np.array([[0,0,1], [2,3,2], [1,1,1]])
 
-	test_enemy_dists(a, 0, 1)
-	test_enemy_dists(b, -1, 0)
-	test_enemy_dists(c, 1, 0)
+	_test_enemy_dists(a, 0, 0, 1, 1)
+	_test_enemy_dists(b, 1, 2, 0, 0)
+	_test_enemy_dists(c, 1, 1, 0, 0)
 
-	print "Passed all enemy distance tests"
+	# individual fucntion tests
+
+	_testMarioPosition()
+	_testMarioDirection()
+	_testCanJump()
+	_testCanMoveLeft()
+	_testCanMoveRight()
+	_testEnemyOnScreen()
+	_testGroundBelow()
+	_testTimeRemaining()
+	_testMarioStatus()
 
 	print "All tests passed!"
 
