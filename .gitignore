@@ -1,6 +1,7 @@
 # Gabe Additions #
 ##################
 save/*.npy
+save/*.pickle
 
 # Kevin Additions #
 ############
