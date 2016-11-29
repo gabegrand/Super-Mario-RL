@@ -1,8 +1,8 @@
 # Game
-WORLD = '1-4'
+WORLD = '1-3'
 LEVEL = 'ppaquette/SuperMarioBros-' + WORLD + '-Tiles-v0'
 
-TRAINING_ITERATIONS = 100
+TRAINING_ITERATIONS = 10
 
 # Whether to load from existing Q values file
 LOAD_FROM = None

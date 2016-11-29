@@ -1,6 +1,20 @@
 import numpy as np
 import sys
 
+
+# Returns a vector (actually a util.Counter object) of features
+def getFeatures(prev_state, state):
+	features = util.Counter()
+
+	# Get Mario's position
+	prev_mpos = marioPosition(prev_state)
+	curr_mpos = marioPosition(state)
+
+	features[0] = "TODO"
+
+	return features
+
+
 # Returns mario's position as row, col pair
 # Returns None if Mario not on map
 # Always perform None check on return val

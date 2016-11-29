@@ -7,6 +7,7 @@ import multiprocessing
 from qAgent import QLearningAgent
 import hyperparameters as hp
 import features as ft
+import numpy as np
 
 # Initialize the correct agent
 agent = None
@@ -77,6 +78,9 @@ while i <= hp.TRAINING_ITERATIONS:
         # IMPORTANT: Only calc features if Mario is on the map!
         # TODO We're updating Q even when Mario is not on map, should we be though?
         if curr_mpos is not None:
+            if not np.array_equal(state[:, -1], newState[:, -1]):
+                print state[:, -1]
+                print newState[:, -1]
             print prev_mpos
             print curr_mpos
             print ft.marioDirection(prev_mpos, curr_mpos)

@@ -97,3 +97,31 @@ class QLearningAgent:
                 self.Q = pickle.load(handle)
         except:
             ValueError('Failed to load file %s' % ('save/' + fname))
+
+class ApproxQAgent(QLearningAgent):
+
+    def __init__(self):
+        self.weights = util.Counter()
+        self.alpha = hp.ALPHA
+        self.epsilon = hp.EPSILON
+        self.gamma = hp.GAMMA
+        self.actions = hp.MAPPING.keys()
+
+    def getWeights(self):
+        return self.weights
+
+    def getQValue(self, state, action):
+        return self.getWeights() * self.featExtractor.getFeatures(state, action)
+
+"""
+    def update(self, state, action, nextState, reward):
+        # Compute value of nextState
+        nextStateValue = self.computeValueFromQValues(nextState)
+
+        # Get dictionary (actually a util.Counter object) of features and values
+        feature_dict = self.featExtractor.getFeatures(state, action)
+
+        # Update each weight iteratively based on feature
+        for feature in feature_dict:
+            self.weights[feature] = self.weights[feature] + self.alpha * ((reward + self.discount * nextStateValue) - self.getQValue(state, action)) * feature_dict[feature]
+"""
