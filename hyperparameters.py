@@ -10,7 +10,7 @@ LOAD_FROM = None
 # How often to save Q values
 SAVE_EVERY = 10
 
-# 0 is Q-Learning, 1 is POMDP
+# 0 is Q-Learning, should 1 be approximate Q?
 AGENT_TYPE = 0
 
 # Q Learning Agent Parameters
