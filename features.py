@@ -1,4 +1,5 @@
 import numpy as np
+import sys
 
 # Returns mario's position as row, col pair
 # Returns None if Mario not on map
@@ -86,6 +87,86 @@ def groundLeftDistance(state):
 			dist += 1
 	return dist
 
+# horizontal distance to nearest enemy (right is positive)
+def horDistEnemy(state):
+	mario_pos = marioPosition(state)
+	if mario_pos is None:
+		return None
+	m_row, m_col = mario_pos
+
+	# if no enemies, return right horizontal distance remaining on screen
+	e_rows, e_cols = np.nonzero(state == 2)
+	if e_rows.size == 0 or e_cols.size == 0:
+		return state.shape[1] - m_col
+
+	# find the nearest enemy
+	nearest = sys.maxsize
+
+	# look to the right
+	for col_num in xrange(m_col, state.shape[1]):
+		col_contents = state[:, col_num]
+		enemies = np.nonzero(col_contents == 2)
+		if enemies[0].size > 0:
+			nearest = col_num - m_col
+			break
+
+	# look to the left
+	for col_num in xrange(m_col - 1, -1, -1):
+		# if we're already farther away than nearest, break
+		if abs(m_col - col_num) > nearest:
+			break
+
+		col_contents = state[:, col_num]
+		enemies = np.nonzero(col_contents == 2)
+
+		# if we've found an enemy, we're as close as we'll get
+		if enemies[0].size > 0:
+			if abs(m_col - col_num) < nearest:
+				nearest = col_num - m_col
+			break
+
+	return nearest
+
+# horizontal distance to nearest enemy (down is positive b/c of indexing)
+def vertDistEnemy(state):
+	mario_pos = marioPosition(state)
+	if mario_pos is None:
+		return None
+	m_row, m_col = mario_pos
+
+	# if no enemies, return vertical distance to bottom of screen
+	e_rows, e_cols = np.nonzero(state == 2)
+	if e_rows.size == 0 or e_cols.size == 0:
+		return state.shape[0] - m_row
+
+	# find the nearest enemy
+	nearest = sys.maxsize
+
+	# look below
+	for row_num in xrange(m_row, state.shape[0]):
+		row_contents = state[row_num, :]
+		enemies = np.nonzero(row_contents == 2)
+		if enemies[0].size > 0:
+			nearest = row_num - m_row
+			break
+
+	# look above
+	for row_num in xrange(m_row - 1, -1, -1):
+		# if we're already farther away than nearest, break
+		if abs(m_row - row_num) > nearest:
+			break
+
+		row_contents = state[row_num, :]
+		enemies = np.nonzero(row_contents == 2)
+
+		# if we've found an enemy, we're as close as we'll get
+		if enemies[0].size > 0:
+			if abs(m_row - row_num) < nearest:
+				nearest = row_num - m_row
+			break
+
+	return nearest
+
 # Return the number of enemies on the screen
 def numEnemiesOnScreen(state):
 	rows, cols = np.nonzero(state == 2)
@@ -106,6 +187,8 @@ def timeRemaining(info):
 def distanceFromStart(info):
 	return _fetchEntry(info, "distance")
 
+#x-axis velocity
+
 # PRIVATE FUNCTIONS
 
 # Return the value for key in info dict, printing errors where applicable
@@ -119,53 +202,87 @@ def _fetchEntry(info, key):
 
 # TESTING FUNCTIONS
 
-def test(state, left, right, below, above):
+def test_bounds(state, left, right, below, above):
 	assert groundLeftDistance(state) == left
 	assert groundRightDistance(state) == right
 	assert groundVertDistance(state) == below
 	assert roofVertDistance(state) == above
 
+def test_enemy_dists(state, hDistEnemy, vDistEnemy):
+	assert horDistEnemy(state) == hDistEnemy
+	assert vertDistEnemy(state) == vDistEnemy
+
 def main():
-	print "Running tests"
+	print "Running boundary tests"
 	a = np.array([[1,1,1], [3,0,0], [1,1,1]])
 	b = np.array([[1,1,1], [0,3,0], [1,1,1]])
 	c = np.array([[1,1,1], [0,0,3], [1,1,1]])
 
-	test(a, 0, 2, 0, 0)
-	test(b, 1, 1, 0, 0)
-	test(c, 2, 0, 0, 0)
+	test_bounds(a, 0, 2, 0, 0)
+	test_bounds(b, 1, 1, 0, 0)
+	test_bounds(c, 2, 0, 0, 0)
 
 	a = np.array([[1,1,1], [3,0,0], [0,0,0]])
 	b = np.array([[1,1,1], [0,3,0], [0,0,0]])
 	c = np.array([[1,1,1], [0,0,3], [0,0,0]])
 
-	test(a, 0, 0, 1, 0)
-	test(b, 0, 0, 1, 0)
-	test(c, 0, 0, 1, 0)
+	test_bounds(a, 0, 0, 1, 0)
+	test_bounds(b, 0, 0, 1, 0)
+	test_bounds(c, 0, 0, 1, 0)
 
 	a = np.array([[0,0,0], [3,0,0], [1,1,1]])
 	b = np.array([[0,0,0], [0,3,0], [1,1,1]])
 	c = np.array([[0,0,0], [0,0,3], [1,1,1]])
 
-	test(a, 0, 2, 0, 1)
-	test(b, 1, 1, 0, 1)
-	test(c, 2, 0, 0, 1)
+	test_bounds(a, 0, 2, 0, 1)
+	test_bounds(b, 1, 1, 0, 1)
+	test_bounds(c, 2, 0, 0, 1)
 
 	a = np.array([[1,0,1], [3,0,0], [1,0,1]])
 	b = np.array([[1,0,1], [0,3,0], [1,0,1]])
 	c = np.array([[1,0,1], [0,0,3], [1,0,1]])
 
-	test(a, 0, 0, 0, 0)
-	test(b, 1, 1, 1, 1)
-	test(c, 0, 0, 0, 0)
+	test_bounds(a, 0, 0, 0, 0)
+	test_bounds(b, 1, 1, 1, 1)
+	test_bounds(c, 0, 0, 0, 0)
 
 	a = np.array([[0,0,0,0,0], [0,0,0,0,0], [0,1,3,1,0], [0,0,0,1,0], [1,1,0,0,0]])
 	b = np.array([[0,1,0,0,0], [1,3,1,0,0], [0,0,0,0,0], [0,0,0,0,0], [0,1,1,1,1]])
 	c = np.array([[0,0,0,1,0], [0,0,0,0,0], [0,0,0,0,0], [0,0,1,3,1], [0,1,1,0,0]])
 
-	test(a, 2, 1, 2, 2)
-	test(b, 0, 3, 2, 0)
-	test(c, 2, 0, 1, 2)
+	test_bounds(a, 2, 1, 2, 2)
+	test_bounds(b, 0, 3, 2, 0)
+	test_bounds(c, 2, 0, 1, 2)
+
+	print "Passed all boundary tests!"
+
+	print "Running enemy distance tests"
+
+	a = np.array([[1,1,1], [3,0,0], [1,1,1]])
+	b = np.array([[1,1,1], [0,3,0], [1,1,1]])
+	c = np.array([[1,1,1], [1,1,1], [0,0,3]])
+
+	test_enemy_dists(a, 3, 2)
+	test_enemy_dists(b, 2, 2)
+	test_enemy_dists(c, 1, 1)
+
+	a = np.array([[1,1,1], [3,0,0], [0,0,2]])
+	b = np.array([[0,2,0], [0,3,0], [1,1,1]])
+	c = np.array([[1,1,1], [0,0,3], [2,0,0]])
+
+	test_enemy_dists(a, 2, 1)
+	test_enemy_dists(b, 0, -1)
+	test_enemy_dists(c, -2, 1)
+
+	a = np.array([[1,2,0], [1,3,0], [1,2,1]])
+	b = np.array([[0,0,0], [2,3,0], [2,1,1]])
+	c = np.array([[0,0,1], [2,3,2], [1,1,1]])
+
+	test_enemy_dists(a, 0, 1)
+	test_enemy_dists(b, -1, 0)
+	test_enemy_dists(c, 1, 0)
+
+	print "Passed all enemy distance tests"
 
 	print "All tests passed!"
 
