@@ -5,7 +5,7 @@ LEVEL = 'ppaquette/SuperMarioBros-' + WORLD + '-Tiles-v0'
 TRAINING_ITERATIONS = 100
 
 # Whether to load from existing Q values file
-LOAD_FROM = '2016-11-23-18-58-world-1-4-iter-91.pickle'
+LOAD_FROM = None
 
 # How often to save Q values
 SAVE_EVERY = 10
