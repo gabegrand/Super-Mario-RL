@@ -4,6 +4,8 @@ import sys
 # Returns mario's position as row, col pair
 # Returns None if Mario not on map
 # Always perform None check on return val
+# For functions in this file, use _marioPosition, since functions
+# should only be called if mario is on screen
 def marioPosition(state):
 	rows, cols = np.nonzero(state == 3)
 	if rows.size == 0 or cols.size == 0:
@@ -15,8 +17,10 @@ def marioPosition(state):
 # 0 - stationary, 1 - up, 2 - up/right
 # 3 - right, 4 - down/right, 5 - down
 # 6 - down/left, 7 - left, 8 - up/left
-# TODO what about case where mario moves off screen? is this possible?
+# TODO what about case where mario moves from right edge of screen to left?
+# is this possible?
 # TODO direction assignment might not be linear, talk to Gabe
+# TODO screen moves, so moving a column to the right doesn't necessarily mean right
 def marioDirection(prev_mpos, curr_mpos):
 	assert curr_mpos is not None
 	if prev_mpos is None:
@@ -297,6 +301,72 @@ def _marioPosition(state):
 	assert rows.size != 0 and cols.size != 0
 	return rows[0], cols[0]
 
+# TESTING
+
+def _testMarioPosition():
+	a = np.array([[1,1,1], [1,1,0], [0,2,1]])
+	b = np.array([[1,2,1], [0,0,3], [1,1,2]])
+	assert marioPosition(a) == None
+	assert marioPosition(b) == (1, 2)
+
+def _testMarioDirection():
+	#Init
+	prev = None
+	curr = (1,1)
+	assert marioDirection(prev, curr) == 0
+	# Up
+	prev = (1,1)
+	curr = (0,1)
+	assert marioDirection(prev, curr) == 1
+	# Up/right
+	prev = (1,0)
+	curr = (0,1)
+	assert marioDirection(prev, curr) == 2
+	# Right
+	prev = (0,0)
+	curr = (0,1)
+	assert marioDirection(prev, curr) == 3
+	# Down/right
+	prev = (0,0)
+	curr = (1,1)
+	assert marioDirection(prev, curr) == 4
+	# Down
+	prev = (0,0)
+	curr = (1,0)
+	assert marioDirection(prev, curr) == 5
+	# Down/left
+	prev = (0,1)
+	curr = (1,0)
+	assert marioDirection(prev, curr) == 6
+	# Left
+	prev = (1,1)
+	curr = (1,0)
+	assert marioDirection(prev, curr) == 7
+	# Up/Left
+	prev = (1,1)
+	curr = (0,0)
+	assert marioDirection(prev, curr) == 8
+	# Stationary
+	prev = (1,1)
+	curr = (1,1)
+	assert marioDirection(prev, curr) == 0
+
+def _testMarioStatus():
+	info = {'time': 3, 'player_status': -1}
+	assert marioStatus(info) == -1
+	info = {}
+	assert marioStatus(info) == None
+	info = {'player_status': 2}
+	assert marioStatus(info) == 2
+
+def _testTimeRemaining():
+	info = {'time': -1, 'player_status': 1}
+	assert timeRemaining(info) == -1
+	info = {'player_status': 1}
+	assert timeRemaining(info) == None
+	info = {'time': 2}
+	assert timeRemaining(info) == 2
+
 def _test_bounds(state, left, right, above, below):
 	assert groundLeftDistance(state) == left
 	assert groundRightDistance(state) == right
@@ -310,7 +380,6 @@ def _test_enemy_dists(state, dLeft, dRight, dUp, dDown):
 	assert distDownEnemy(state) == dDown
 
 def _testEnemyOnScreen():
-	print "Testing enemy on screen"
 	a = np.array([[1,1,1], [3,1,0], [0,2,1]])
 	b = np.array([[1,2,1], [0,3,0], [1,1,2]])
 	c = np.array([[1,3,1], [0,0,0], [1,1,1]])
@@ -322,11 +391,9 @@ def _testEnemyOnScreen():
 	assert enemyOnScreen(c) == 0
 	assert enemyOnScreen(d) == 1
 	assert enemyOnScreen(e) == 1
-	print "All tests passed!"
 
-
+# TODO can we move left if at left edge of screen?
 def _testCanMoveLeft():
-	print "Testing can move left"
 	a = np.array([[1,1,1], [3,0,0], [1,1,1]])
 	b = np.array([[1,1,1], [0,3,0], [1,1,1]])
 	c = np.array([[1,1,1], [0,1,3], [1,1,1]])
@@ -334,11 +401,9 @@ def _testCanMoveLeft():
 	assert canMoveLeft(a) == 0
 	assert canMoveLeft(b) == 1
 	assert canMoveLeft(c) == 0
-	print "All tests passed!"
 
 
 def _testCanMoveRight():
-	print "Testing can move right"
 	a = np.array([[1,1,1], [3,1,0], [1,1,1]])
 	b = np.array([[1,1,1], [0,3,0], [1,1,1]])
 	c = np.array([[1,1,1], [0,1,3], [1,1,1]])
@@ -346,10 +411,8 @@ def _testCanMoveRight():
 	assert canMoveRight(a) == 0
 	assert canMoveRight(b) == 1
 	assert canMoveRight(c) == 1
-	print "All tests passed!"
 
 def _testCanJump():
-	print "Testing can jump"
 	a = np.array([[1,1,1], [3,1,0], [1,1,1]])
 	b = np.array([[1,0,1], [0,3,0], [1,1,1]])
 	c = np.array([[1,1,1], [0,1,0], [1,1,3]])
@@ -361,10 +424,8 @@ def _testCanJump():
 	assert canJump(c) == 1
 	assert canJump(d) == 0
 	assert canJump(e) == 1
-	print "All tests passed!"
 
 def _testGroundBelow():
-	print "Testing ground below"
 	a = np.array([[1,1,1], [3,1,0], [0,1,1]])
 	b = np.array([[1,0,1], [0,3,0], [1,1,1]])
 	c = np.array([[1,3,1], [0,0,0], [1,1,1]])
@@ -376,10 +437,12 @@ def _testGroundBelow():
 	assert groundBelow(c) == 1
 	assert groundBelow(d) == 0
 	assert groundBelow(e) == 0
-	print "All tests passed!"
 
 def main():
-	print "Running boundary tests"
+	print "Testing feature functions..."
+
+	# state boundary tests
+
 	a = np.array([[1,1,1], [3,0,0], [1,1,1]])
 	b = np.array([[1,1,1], [0,3,0], [1,1,1]])
 	c = np.array([[1,1,1], [0,0,3], [1,1,1]])
@@ -420,9 +483,7 @@ def main():
 	_test_bounds(b, 0, 3, 1, 3)
 	_test_bounds(c, 2, 0, 3, 2)
 
-	print "All tests passed!"
-
-	print "Running enemy distance tests"
+	# enemy dist tests
 
 	a = np.array([[1,1,1], [3,0,0], [1,1,1]])
 	b = np.array([[1,1,1], [0,3,0], [1,1,1]])
@@ -448,14 +509,18 @@ def main():
 	_test_enemy_dists(b, 1, 2, 0, 0)
 	_test_enemy_dists(c, 1, 1, 0, 0)
 
-	print "All tests passed!"
+	# individual fucntion tests
 
+	_testMarioPosition()
+	_testMarioDirection()
 	_testCanJump()
 	_testCanMoveLeft()
 	_testCanMoveRight()
 	_testEnemyOnScreen()
 	_testGroundBelow()
+	_testTimeRemaining()
+	_testMarioStatus()
 
-	print "End of tests"
+	print "All tests passed!"
 
 if __name__ == "__main__": main()
