@@ -89,7 +89,7 @@ while i <= hp.TRAINING_ITERATIONS:
             features = ft.getFeatures(state, newState, info)
 
         # Update Q values
-        agent.update(str(state), action, str(newState), reward)
+        agent.update(features, action, str(newState), reward)
 
         # Advance the state
         state = newState
