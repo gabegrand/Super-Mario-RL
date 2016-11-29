@@ -27,54 +27,65 @@ def marioPosition(state):
 		return None
 	return rows[0], cols[0]
 
-# Returns a number corresponding to Mario's direction
-# 0 - stationary, 1 - up, 2 - up/right
-# 3 - right, 4 - down/right, 5 - down
-# 6 - down/left, 7 - left, 8 - up/left
-# TODO what about case where mario moves from right edge of screen to left?
-# is this possible?
-# TODO direction assignment might not be linear, talk to Gabe
-# TODO screen moves, so moving a column to the right doesn't necessarily mean right
-def marioDirection(prev_mpos, curr_mpos):
+# Binary feature as to whether Mario is moving up
+# Only call if mario is currently on screen
+def movingUp(prev_state, curr_state):
+	prev_mpos = marioPosition(prev_state)
+	curr_mpos = marioPosition(curr_state)
 	assert curr_mpos is not None
 	if prev_mpos is None:
 		return 0
-	prev_row, prev_col = prev_mpos
-	curr_row, curr_col = curr_mpos
+	prev_row, _ = prev_mpos
+	curr_row, _ = curr_mpos
 
-	if curr_row == prev_row:
-		# stationary
-		if curr_col == prev_col:
-			return 0
-		# right
-		elif curr_col > prev_col:
-			return 3
-		# left (curr_col < prev_col)
-		else:
-			return 7
+	if curr_row < prev_row or (action_num in [1] and canMoveUp(prev_state)):
+		return 1
+	return 0
 
-	elif curr_row > prev_row:
-		# down
-		if curr_col == prev_col:
-			return 5
-		# down-right
-		elif curr_col > prev_col:
-			return 4
-		# down-left (curr_col < prev_col)
-		else:
-			return 6
+# Binary feature as to whether Mario is moving down
+# Only call if mario is currently on screen
+def movingDown(prev_state, curr_state, action_num):
+	prev_mpos = marioPosition(prev_state)
+	curr_mpos = marioPosition(curr_state)
+	assert curr_mpos is not None
+	if prev_mpos is None:
+		return 0
+	prev_row, _ = prev_mpos
+	curr_row, _ = curr_mpos
 
-	# curr_row < prev_row
-	else:
-		# up
-		if curr_col == prev_col:
-			return 1
-		# up-right
-		elif curr_col > prev_col:
-			return 2
-		# up-left (curr_col < prev_col)
-		else:
-			return 8
+	if curr_row > prev_row or (action_num in [2] and canMoveDown(prev_state)):
+		return 1
+	return 0
+
+# Binary feature as to whether Mario is moving right
+# Only call if mario is currently on screen
+def movingRight(prev_state, curr_state, action_num):
+	prev_mpos = marioPosition(prev_state)
+	curr_mpos = marioPosition(curr_state)
+	assert curr_mpos is not None
+	if prev_mpos is None:
+		return 0
+	_, prev_col = prev_mpos
+	_, curr_col = curr_mpos
+
+	if curr_col > prev_col or (action_num in [7,8,9,10] and canMoveRight(prev_state)):
+		return 1
+	return 0
+
+# Binary feature as to whether Mario is moving left
+# Only call if mario is currently on screen
+def movingLeft(prev_state, curr_state):
+	prev_mpos = marioPosition(prev_state)
+	curr_mpos = marioPosition(curr_state)
+	assert curr_mpos is not None
+	if prev_mpos is None:
+		return 0
+	_, prev_col = prev_mpos
+	_, curr_col = curr_mpos
+
+	if curr_col < prev_col or (action_num in [7,8,9,10] and canMoveLeft(prev_state)):
+		return 1
+	return 0
 
 # Returns the vert distance from Mario to the ground
 # if no ground below Mario, return number of rows to offscreen
@@ -256,13 +267,24 @@ def groundBelow(state):
 		return 0
 	return 1
 
-# Return whether Mario can jump in his position (1=true)
+# Return whether Mario can move up in his position (1=true)
 # Only call if Mario is on screen
-def canJump(state):
+def canMoveUp(state):
 	m_row, m_col = _marioPosition(state)
 
 	if m_row > 0:
 		if state[m_row-1, m_col] == 0:
+			return 1
+		return 0
+	return 1
+
+# Return whether Mario can move down in his position (1=true)
+# Only call if Mario is on screen
+def canMoveDown(state):
+	m_row, m_col = _marioPosition(state)
+
+	if m_row < state.shape[0] - 1:
+		if state[m_row+1, m_col] == 0:
 			return 1
 		return 0
 	return 1
