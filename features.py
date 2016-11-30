@@ -3,14 +3,15 @@ import sys
 import util
 
 # Returns a vector (actually a util.Counter object) of features
-def getFeatures(prev_state, state, action):
+def getFeatures(state, action):
 
 	# Get Mario's position
-	prev_mpos = marioPosition(prev_state)
+	# prev_mpos = marioPosition(prev_state)
 	curr_mpos = marioPosition(state)
 
 	# Make sure Mario is on the screen
-	if not (prev_mpos and curr_mpos):
+	# if not (prev_mpos and curr_mpos):
+	if not curr_mpos:
 		raise ValueError("getFeatures: Mario position is None")
 
 	features = util.Counter()
@@ -19,10 +20,10 @@ def getFeatures(prev_state, state, action):
 	features['canMoveRight'] = canMoveRight(state)
 	features['canMoveUp'] = canMoveLeft(state)
 	features['canMoveDown'] = canMoveLeft(state)
-	features['movingUp'] = movingUp(prev_state, state, action)
-	features['movingDown'] = movingDown(prev_state, state, action)
-	features['movingLeft'] = movingLeft(prev_state, state, action)
-	features['movingRight'] = movingRight(prev_state, state, action)
+	# features['movingUp'] = movingUp(prev_state, state, action)
+	# features['movingDown'] = movingDown(prev_state, state, action)
+	# features['movingLeft'] = movingLeft(prev_state, state, action)
+	# features['movingRight'] = movingRight(prev_state, state, action)
 	features['groundVertDistance'] = groundVertDistance(state)
 	features['roofVertDistance'] = roofVertDistance(state)
 	features['groundLeftDistance'] = groundLeftDistance(state)
@@ -33,8 +34,6 @@ def getFeatures(prev_state, state, action):
 	features['distDownEnemy'] = distDownEnemy(state)
 	features['enemyOnScreen'] = enemyOnScreen(state)
 	features['groundBelow'] = groundBelow(state)
-
-	print features
 
 	return features
 

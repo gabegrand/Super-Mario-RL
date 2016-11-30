@@ -14,9 +14,9 @@ SAVE_EVERY = 10
 AGENT_TYPE = 1
 
 # Q Learning Agent Parameters
-ALPHA = 0.3     # Learning rate
+ALPHA = 0.001     # Learning rate
 EPSILON = 0.2   # Random move probability
-GAMMA = 0.9     # Discount factor
+GAMMA = 0.5     # Discount factor
 
 # Penalty for dying in reward function
 DEATH_PENALTY = 100

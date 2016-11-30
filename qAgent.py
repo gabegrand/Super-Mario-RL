@@ -115,7 +115,7 @@ class ApproxQAgent(QLearningAgent):
         self.gamma = hp.GAMMA
         self.actions = hp.MAPPING.keys()
         self.features = util.Counter()
-        self.prev_state = None
+        # self.prev_state = None
 
     def getWeights(self):
         return self.weights
@@ -123,40 +123,64 @@ class ApproxQAgent(QLearningAgent):
     def getQValue(self, state, action):
 
         # Handle initial case where there is no previous state
-        if self.prev_state is None:
-            print "getQValue: Prev state is none; returning 0"
-            return 0
+        # if self.prev_state is None:
+        #     print "getQValue: Prev state is none; returning 0"
+        #     return 0
 
+        # else:
+        # Ensure Mario is on the screen in both states
+        # if ft.marioPosition(self.prev_state) and ft.marioPosition(state):
+        if ft.marioPosition(state):
+            w = self.getWeights()
+            f = ft.getFeatures(state, action)
+            # print w * f
+            return w * f
         else:
-            # Ensure Mario is on the screen in both states
-            if ft.marioPosition(self.prev_state) and ft.marioPosition(state):
-                print "getQValue: Computing features"
-                return self.getWeights() * ft.getFeatures(self.prev_state, state, action)
-            else:
-                print "getQValue: Mario not on screen"
-                return 0
+            print "getQValue: Mario not on screen"
+            return 0
 
     def update(self, state, action, nextState, reward):
 
-        print "WEIGHTS"
-        print self.weights
-
         # Ensure Mario is on the screen in both states
-        if ft.marioPosition(state) and ft.marioPosition(nextState):
+        # if ft.marioPosition(state) and ft.marioPosition(nextState):
+        if ft.marioPosition(nextState):
 
             # Update features
-            print "update: Computing features"
-            features = ft.getFeatures(state, nextState, action)
+            features = ft.getFeatures(nextState, action)
             self.features = features
         else:
             print "update: Mario not on screen"
 
+        # Update prev state
+        self.prev_state = state
+
         # Compute value of nextState
         nextStateValue = self.computeValueFromQValues(nextState)
 
-        # Update each weight iteratively based on feature
-        for feature in self.features:
-            self.weights[feature] = self.weights[feature] + self.alpha * ((reward + self.gamma * nextStateValue) - self.getQValue(state, action)) * self.features[feature]
+        # Batch update weights
+        new_weights = util.Counter()
 
-        # Update prev state
-        self.prev_state = state
+        for feature in self.features:
+            new_weights[feature] = self.weights[feature] + self.alpha * ((reward + self.gamma * nextStateValue) - self.getQValue(state, action)) * self.features[feature]
+
+        self.weights = new_weights
+        print self.weights
+
+    def numStatesLearned(self):
+        return None
+
+    def save(self, i, j):
+
+        # Build save file name
+        now = datetime.now()
+        fname = '-'.join([str(x) for x in [now.year, now.month, now.day, now.hour, now.minute]]) + '-world-' + hp.WORLD + '-iter-' + str(i + j)
+
+        with open('save/' + fname + '.pickle', 'wb') as handle:
+            pickle.dump(self.weights, handle)
+
+    def load(self, fname):
+        try:
+            with open('save/' + fname, 'rb') as handle:
+                self.Q = pickle.load(handle)
+        except:
+            ValueError('Failed to load file %s' % ('save/' + fname))
