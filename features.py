@@ -62,7 +62,7 @@ def movingUp(prev_state, curr_state, action_num):
 	prev_row, _ = prev_mpos
 	curr_row, _ = curr_mpos
 
-	if curr_row < prev_row or (action_num in [1] and canMoveUp(prev_state)):
+	if curr_row < prev_row: #or (action_num in [1,4,6,8,10,11,13] and canMoveUp(prev_state)):
 		return 1
 	return 0
 
@@ -77,7 +77,7 @@ def movingDown(prev_state, curr_state, action_num):
 	prev_row, _ = prev_mpos
 	curr_row, _ = curr_mpos
 
-	if curr_row > prev_row or (action_num in [2] and canMoveDown(prev_state)):
+	if curr_row > prev_row: #or (action_num in [2] and canMoveDown(prev_state)):
 		return 1
 	return 0
 
@@ -107,7 +107,7 @@ def movingLeft(prev_state, curr_state, action_num):
 	_, prev_col = prev_mpos
 	_, curr_col = curr_mpos
 
-	if curr_col < prev_col or (action_num in [7,8,9,10] and canMoveLeft(prev_state)):
+	if curr_col < prev_col: #or (action_num in [3,4,5,6] and canMoveLeft(prev_state)):
 		return 1
 	return 0
 
