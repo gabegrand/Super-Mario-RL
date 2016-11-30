@@ -9,15 +9,10 @@ from qAgent import ApproxQAgent
 import hyperparameters as hp
 import features as ft
 import numpy as np
+import time
 
 # Initialize the correct agent
-agent = None
-if hp.AGENT_TYPE == 0:
-    agent = QLearningAgent()
-elif hp.AGENT_TYPE == 1:
-    agent = ApproxQAgent()
-else:
-    raise ValueError("Invalid AGENT_TYPE in hyperparameters")
+agent = ApproxQAgent()
 
 # Load from previous saved Q values
 if hp.LOAD_FROM is not None:
@@ -68,6 +63,8 @@ while i <= hp.TRAINING_ITERATIONS:
     state, reward, done, info = env.step(action)
 
     while not done:
+
+        time.sleep(1)
 
         # Choose action according to Q
         action = agent.getAction(state)

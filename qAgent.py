@@ -4,6 +4,7 @@ import numpy as np
 import pickle
 from datetime import datetime
 import hyperparameters as hp
+import features as ft
 
 class QLearningAgent:
 
@@ -15,6 +16,10 @@ class QLearningAgent:
         self.actions = hp.MAPPING.keys()
 
     def getQValue(self, state, action):
+
+        # Convert numpy array to string
+        state = str(state)
+
         return self.Q[state, action]
 
     def computeValueFromQValues(self, state):
@@ -73,6 +78,9 @@ class QLearningAgent:
 
     def update(self, state, action, nextState, reward):
 
+        # Convert numpy array to string
+        state = str(state)
+
         # Compute value of nextState
         nextStateValue = self.computeValueFromQValues(nextState)
 
@@ -106,17 +114,49 @@ class ApproxQAgent(QLearningAgent):
         self.epsilon = hp.EPSILON
         self.gamma = hp.GAMMA
         self.actions = hp.MAPPING.keys()
+        self.features = util.Counter()
+        self.prev_state = None
 
     def getWeights(self):
         return self.weights
 
     def getQValue(self, state, action):
-        return self.getWeights() * self.featExtractor.getFeatures(state, action)
 
-    def update(self, features, action, nextState, reward):
+        # Handle initial case where there is no previous state
+        if self.prev_state is None:
+            print "getQValue: Prev state is none; returning 0"
+            return 0
+
+        else:
+            # Ensure Mario is on the screen in both states
+            if ft.marioPosition(self.prev_state) and ft.marioPosition(state):
+                print "getQValue: Computing features"
+                return self.getWeights() * ft.getFeatures(self.prev_state, state, action)
+            else:
+                print "getQValue: Mario not on screen"
+                return 0
+
+    def update(self, state, action, nextState, reward):
+
+        print "WEIGHTS"
+        print self.weights
+
+        # Ensure Mario is on the screen in both states
+        if ft.marioPosition(state) and ft.marioPosition(nextState):
+
+            # Update features
+            print "update: Computing features"
+            features = ft.getFeatures(state, nextState, action)
+            self.features = features
+        else:
+            print "update: Mario not on screen"
+
         # Compute value of nextState
         nextStateValue = self.computeValueFromQValues(nextState)
 
         # Update each weight iteratively based on feature
-        for feature in features:
-            self.weights[feature] = self.weights[feature] + self.alpha * ((reward + self.gamma * nextStateValue) - self.getQValue(state, action)) * features[feature]
+        for feature in self.features:
+            self.weights[feature] = self.weights[feature] + self.alpha * ((reward + self.gamma * nextStateValue) - self.getQValue(state, action)) * self.features[feature]
+
+        # Update prev state
+        self.prev_state = state
