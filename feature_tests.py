@@ -2,19 +2,34 @@ from features import *
 import numpy as np
 import sys
 
+def checkAnswerPairs(answer_pairs):
+	for guess, ans in answer_pairs:
+		assert guess >= 0.0
+		assert guess <= 1.0
+		assert ans >= 0.0
+		assert ans <= 1.0
+		assert guess == ans
+
 # TESTING
 
 def testMarioPosition():
 	a = np.array([[1,1,1], [1,1,0], [0,2,1]])
 	b = np.array([[1,2,1], [0,0,3], [1,1,2]])
-	assert marioPosition(a) == None
-	assert marioPosition(b) == (1, 2)
+
+	ans_a = marioPosition(a)
+	ans_b = marioPosition(b)
+
+	assert ans_a == None
+	assert ans_b == (1, 2)
 
 def checkMovement(prev, curr, a_num, up, down, left, right):
-	assert movingUp(prev, curr, a_num) == up
-	assert movingDown(prev, curr, a_num) == down
-	assert movingLeft(prev, curr, a_num) == left
-	assert movingRight(prev, curr, a_num) == right
+
+	u = movingUp(prev, curr, a_num)
+	d = movingDown(prev, curr, a_num) 
+	l = movingLeft(prev, curr, a_num) 
+	r = movingRight(prev, curr, a_num) 
+
+	checkAnswerPairs([(u, up), (d, down), (l, left), (r, right)])
 
 def testMarioDirection():
 	#Init
@@ -105,16 +120,36 @@ def testMarioDirection():
 	checkMovement(prev, curr, 0, 0, 0, 0, 0)
 
 def test_bounds(state, left, right, above, below):
-	assert groundLeftDistance(state) == float(left) / (state.shape[1] - 1)
-	assert groundRightDistance(state) == float(right) / (state.shape[1] - 1)
-	assert roofVertDistance(state) == float(above) / state.shape[0]
-	assert groundVertDistance(state) == float(below) / state.shape[0]
+	l = groundLeftDistance(state)
+	left = float(left) / (state.shape[1] - 1)
+
+	r = groundRightDistance(state)
+	right = float(right) / (state.shape[1] - 1)
+
+	a = roofVertDistance(state)
+	above = float(above) / state.shape[0]
+
+	b = groundVertDistance(state)
+	below = float(below) / state.shape[0]
+
+	checkAnswerPairs([(a, above), (b, below), (l, left), (r, right)])
 
 def test_enemy_dists(state, dLeft, dRight, dUp, dDown):
-	assert distLeftEnemy(state) == float(dLeft) / state.shape[1]
-	assert distRightEnemy(state) == float(dRight) / state.shape[1]
-	assert distUpEnemy(state) == float(dUp) / state.shape[0]
-	assert distDownEnemy(state) == float(dDown) / state.shape[0]
+	l = distLeftEnemy(state)
+	dLeft = float(dLeft) / state.shape[1]
+	
+	r = distRightEnemy(state)
+	dRight = float(dRight) / state.shape[1]
+	
+
+	u = distUpEnemy(state)
+	dUp = float(dUp) / state.shape[0]
+	
+
+	d = distDownEnemy(state)
+	dDown = float(dDown) / state.shape[0]
+
+	checkAnswerPairs([(l, dLeft), (r, dRight), (u, dUp), (d, dDown)])
 
 def testEnemyOnScreen():
 	a = np.array([[1,1,1], [3,1,0], [0,2,1]])

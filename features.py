@@ -37,7 +37,6 @@ def getFeatures(state, action):
 
 	return features
 
-
 # Returns mario's position as row, col pair
 # Returns None if Mario not on map
 # Always perform None check on return val
@@ -48,7 +47,10 @@ def marioPosition(state):
 	if rows.size == 0 or cols.size == 0:
 		print "WARNING: Mario is off the map"
 		return None
-	return rows[0], cols[0]
+	else:
+		return rows[0], cols[0]
+
+# FEATURE FUNCTIONS --- Any features used should be scaled [0,1]
 
 # Binary feature as to whether Mario is moving up
 # Only call if mario is currently on screen
@@ -57,13 +59,14 @@ def movingUp(prev_state, curr_state, action_num):
 	curr_mpos = marioPosition(curr_state)
 	assert curr_mpos is not None
 	if prev_mpos is None:
-		return 0
+		return 0.0
 	prev_row, _ = prev_mpos
 	curr_row, _ = curr_mpos
 
-	if curr_row < prev_row: #or (action_num in [1,4,6,8,10,11,13] and canMoveUp(prev_state)):
-		return 1
-	return 0
+	if curr_row < prev_row:
+		return 1.0
+	else:
+		return 0.0
 
 # Binary feature as to whether Mario is moving down
 # Only call if mario is currently on screen
@@ -72,28 +75,14 @@ def movingDown(prev_state, curr_state, action_num):
 	curr_mpos = marioPosition(curr_state)
 	assert curr_mpos is not None
 	if prev_mpos is None:
-		return 0
+		return 0.0
 	prev_row, _ = prev_mpos
 	curr_row, _ = curr_mpos
 
-	if curr_row > prev_row: #or (action_num in [2] and canMoveDown(prev_state)):
-		return 1
-	return 0
-
-# Binary feature as to whether Mario is moving right
-# Only call if mario is currently on screen
-def movingRight(prev_state, curr_state, action_num):
-	prev_mpos = marioPosition(prev_state)
-	curr_mpos = marioPosition(curr_state)
-	assert curr_mpos is not None
-	if prev_mpos is None:
-		return 0
-	_, prev_col = prev_mpos
-	_, curr_col = curr_mpos
-
-	if curr_col > prev_col or (action_num in [7,8,9,10] and canMoveRight(prev_state)):
-		return 1
-	return 0
+	if curr_row > prev_row:
+		return 1.0
+	else:
+		return 0.0
 
 # Binary feature as to whether Mario is moving left
 # Only call if mario is currently on screen
@@ -102,91 +91,129 @@ def movingLeft(prev_state, curr_state, action_num):
 	curr_mpos = marioPosition(curr_state)
 	assert curr_mpos is not None
 	if prev_mpos is None:
-		return 0
+		return 0.0
 	_, prev_col = prev_mpos
 	_, curr_col = curr_mpos
 
-	if curr_col < prev_col: #or (action_num in [3,4,5,6] and canMoveLeft(prev_state)):
-		return 1
-	return 0
+	if curr_col < prev_col:
+		return 1.0
+	else:
+		return 0.0
 
-# Returns the vert distance from Mario to the ground
-# if no ground below Mario, return number of rows to offscreen
-# Only call if Mario is on screen
-def groundVertDistance(state):
-	m_row, m_col = _marioPosition(state)
+# Binary feature as to whether Mario is moving right
+# Only call if mario is currently on screen
+def movingRight(prev_state, curr_state, action_num):
+	prev_mpos = marioPosition(prev_state)
+	curr_mpos = marioPosition(curr_state)
+	assert curr_mpos is not None
+	if prev_mpos is None:
+		return 0.0
+	_, prev_col = prev_mpos
+	_, curr_col = curr_mpos
 
-	# get the rows in Mario's column with objects, if any
-	col_contents = state[m_row:, m_col]
-	obj_vert_dists = np.nonzero(col_contents == 1)
+	if curr_col > prev_col or (action_num in [7,8,9,10] and canMoveRight(prev_state)):
+		return 1.0
+	else:
+		return 0.0
 
-	if obj_vert_dists[0].size == 0:
-		return state.shape[0] - m_row
-	return obj_vert_dists[0][0]
 
 # Returns the number of rows between Mario and the roof (0 if next level is roof)
 # if no roof above Mario, return number of rows between Mario and offscreen
 # Only call if Mario is on screen
+# Norm factor is state.shape[0], which is 13
 def roofVertDistance(state):
 	m_row, m_col = _marioPosition(state)
 
 	# get the rows in Mario's column with objects, if any
 	col_contents = state[:m_row, m_col]
-	obj_vert_dists = np.nonzero(col_contents == 1)
+	obj_rows = np.nonzero(col_contents == 1)
 
-	if obj_vert_dists[0].size == 0:
-		return m_row + 1
-	return m_row - obj_vert_dists[0][-1]
+	if obj_rows[0].size == 0:
+		return float(m_row) / state.shape[0]
+	else:
+		return float(m_row - obj_rows[0][-1] - 1) / state.shape[0]
 
-# Returns the # of columns to the right of Mario for which
-# there exists at least one object (ground=1) at a height lower than Mario
+# Returns the vert distance from Mario to the ground, 0 if on ground
+# if no ground below Mario, return number of rows to offscreen
 # Only call if Mario is on screen
-def groundRightDistance(state):
+# Norm factor is state.shape[0], which is 13
+def groundVertDistance(state):
 	m_row, m_col = _marioPosition(state)
 
-	dist = 0
+	if m_row < state.shape[0] - 1:
+		# get the rows in Mario's column with objects, if any
+		col_contents = state[m_row + 1:, m_col]
+		obj_vert_dists = np.nonzero(col_contents == 1)
 
-	if m_row < state.shape[0] - 1 and m_col < state.shape[1] - 1:
-		for col in xrange(m_col + 1, state.shape[1]):
-			col_contents = state[m_row + 1:, col]
-			obj_vert_dists = np.nonzero(col_contents == 1)
-
-			if obj_vert_dists[0].size == 0:
-				return dist
-			dist += 1
-	return dist
+		if obj_vert_dists[0].size == 0:
+			return float(state.shape[0] - m_row - 1) / state.shape[0]
+		else:
+			return float(obj_vert_dists[0][0]) / state.shape[0]
+	else:
+		return 1.0 / state.shape[0]
 
 # Returns the # of columns to the left of Mario for which
 # there exists at least one object (ground=1) at a height lower than Mario
 # Only call if Mario is on screen
+# Norm factor is state.shape[1] - 1, which is 15
 def groundLeftDistance(state):
 	m_row, m_col = _marioPosition(state)
 
-	dist = 0
+	# if Mario at bottom of screen or in left most column, no ground to left
+	if m_row == state.shape[0] - 1 or m_col == 0:
+		return 0.0
 
-	if m_row < state.shape[0] - 1 and m_col > 0:
-		for col in xrange(m_col - 1, -1, -1):
-			col_contents = state[m_row + 1:, col]
-			obj_vert_dists = np.nonzero(col_contents == 1)
+	norm = state.shape[1] - 1.0
+	dist = 0.0
 
-			if obj_vert_dists[0].size == 0:
-				return dist
-			dist += 1
-	return dist
+	for col in xrange(m_col - 1, -1, -1):
+		col_contents = state[m_row + 1:, col]
+		obj_vert_dists = np.nonzero(col_contents == 1)
 
+		if obj_vert_dists[0].size == 0:
+			return dist / norm
+		else:
+			dist += 1.0
+
+	return dist / norm
+
+# Returns the # of columns to the right of Mario for which
+# there exists at least one object (ground=1) at a height lower than Mario
+# Only call if Mario is on screen
+# Norm factor is state.shape[1] - 1, which is 15
+def groundRightDistance(state):
+	m_row, m_col = _marioPosition(state)
+
+	# if Mario at bottom of screen or in right most column, no ground to right
+	if m_row == state.shape[0] - 1 or m_col == state.shape[1] - 1:
+		return 0.0
+
+	norm = state.shape[1] - 1.0
+	dist = 0.0
+
+	for col in xrange(m_col + 1, state.shape[1]):
+		col_contents = state[m_row + 1:, col]
+		obj_vert_dists = np.nonzero(col_contents == 1)
+
+		if obj_vert_dists[0].size == 0:
+			return dist / norm
+		dist += 1.0
+
+	return dist / norm
 
 # left distance to nearest enemy (dist to edge of screen if no enemy)
 # Only call if Mario is on screen
+# Norm factor is state.shape[1], which is 16
 def distLeftEnemy(state):
 	m_row, m_col = _marioPosition(state)
 
 	# if no enemies, return left horizontal distance remaining on screen
 	e_rows, e_cols = np.nonzero(state[:, :m_col + 1] == 2)
 	if e_rows.size == 0 or e_cols.size == 0:
-		return m_col + 1
+		return float(m_col + 1) / state.shape[1]
 
 	# find the nearest enemy
-	nearest = sys.maxsize
+	nearest = None
 
 	# look to the left
 	for col_num in xrange(m_col, -1, -1):
@@ -197,20 +224,21 @@ def distLeftEnemy(state):
 			nearest = m_col - col_num
 			break
 
-	return nearest
+	return float(nearest) / state.shape[1]
 
 # right distance to nearest enemy (dist to edge of screen if no enemy)
 # Only call if Mario is on screen
+# Norm factor is state.shape[1], which is 16
 def distRightEnemy(state):
 	m_row, m_col = _marioPosition(state)
 
 	# if no enemies, return right horizontal distance remaining on screen
 	e_rows, e_cols = np.nonzero(state[:, m_col:] == 2)
 	if e_rows.size == 0 or e_cols.size == 0:
-		return state.shape[1] - m_col
+		return float(state.shape[1] - m_col) / state.shape[1]
 
 	# find the nearest enemy
-	nearest = sys.maxsize
+	nearest = None
 
 	# look to the right
 	for col_num in xrange(m_col, state.shape[1]):
@@ -220,20 +248,21 @@ def distRightEnemy(state):
 			nearest = col_num - m_col
 			break
 
-	return nearest
+	return float(nearest) / state.shape[1]
 
 # up distance to nearest enemy (dist to edge of screen if no enemy)
 # Only call if Mario is on screen
+# Norm factor is state.shape[0], which is 13
 def distUpEnemy(state):
 	m_row, m_col = _marioPosition(state)
 
 	# if no enemies, return up vert dist to edge
 	e_rows, e_cols = np.nonzero(state[:m_row + 1, :] == 2)
 	if e_rows.size == 0 or e_cols.size == 0:
-		return m_row + 1
+		return float(m_row + 1) / state.shape[0]
 
 	# find the nearest enemy
-	nearest = sys.maxsize
+	nearest = None
 
 	# look above
 	for row_num in xrange(m_row, -1, -1):
@@ -245,20 +274,21 @@ def distUpEnemy(state):
 			nearest = m_row - row_num
 			break
 
-	return nearest
+	return float(nearest) / state.shape[0]
 
 # down distance to nearest enemy (dist to edge of screen if no enemy)
 # Only call if Mario is on screen
+# Norm factor is state.shape[0], which is 13
 def distDownEnemy(state):
 	m_row, m_col = _marioPosition(state)
 
 	# if no enemies, return down vert dist to edge
 	e_rows, e_cols = np.nonzero(state[m_row:, :] == 2)
 	if e_rows.size == 0 or e_cols.size == 0:
-		return state.shape[0] - m_row
+		return float(state.shape[0] - m_row) / state.shape[0]
 
 	# find the nearest enemy
-	nearest = sys.maxsize
+	nearest = None
 
 	# look below
 	for row_num in xrange(m_row, state.shape[0]):
@@ -268,14 +298,14 @@ def distDownEnemy(state):
 			nearest = row_num - m_row
 			break
 
-	return nearest
+	return float(nearest) / state.shape[0]
 
 # Return whether there is one or more enemy on screen (1=true)
 def enemyOnScreen(state):
 	rows, cols = np.nonzero(state == 2)
 	if rows.size == 0 or cols.size == 0:
-		return 0
-	return 1
+		return 0.0
+	return 1.0
 
 # Return whether there is ground below Mario (1=true)
 # Only call if Mario is on screen
@@ -287,8 +317,8 @@ def groundBelow(state):
 	ground_below = np.nonzero(col_contents == 1)
 
 	if ground_below[0].size == 0:
-		return 0
-	return 1
+		return 0.0
+	return 1.0
 
 # Return whether Mario can move up in his position (1=true)
 # Only call if Mario is on screen
@@ -297,9 +327,9 @@ def canMoveUp(state):
 
 	if m_row > 0:
 		if state[m_row-1, m_col] == 0:
-			return 1
-		return 0
-	return 1
+			return 1.0
+		return 0.0
+	return 1.0
 
 # Return whether Mario can move down in his position (1=true)
 # Only call if Mario is on screen
@@ -308,9 +338,9 @@ def canMoveDown(state):
 
 	if m_row < state.shape[0] - 1:
 		if state[m_row+1, m_col] == 0:
-			return 1
-		return 0
-	return 1
+			return 1.0
+		return 0.0
+	return 1.0
 
 # Return whether Mario can move right in his position (1=true)
 # Only call if Mario is on screen
@@ -319,9 +349,9 @@ def canMoveRight(state):
 
 	if m_col < state.shape[1] - 1:
 		if state[m_row, m_col + 1] == 0:
-			return 1
-		return 0
-	return 1
+			return 1.0
+		return 0.0
+	return 1.0
 
 # Return whether Mario can move left in his position (1=true)
 # Only call if Mario is on screen
@@ -330,29 +360,11 @@ def canMoveLeft(state):
 
 	if m_col > 0:
 		if state[m_row, m_col - 1] == 0:
-			return 1
-		return 0
-	return 0
-
-# Return the status of mario
-# 0 = small, 1 = big, 2+ = fireball
-def marioStatus(info):
-	return _fetchEntry(info, "player_status")
-
-# Return the number of seconds remaining in the level
-def timeRemaining(info):
-	return _fetchEntry(info, "time")
+			return 1.0
+		return 0.0
+	return 0.0
 
 # PRIVATE FUNCTIONS
-
-# Return the value for key in info dict, printing errors where applicable
-def _fetchEntry(info, key):
-	if key in info.keys():
-		if info[key] == -1:
-			print "WARNING: " + key + " unknown in info dict"
-		return info[key]
-	print "WARNING: " + key + " not in info dict"
-	return None
 
 # version of marioPosition that fails if Mario not on screen
 def _marioPosition(state):
