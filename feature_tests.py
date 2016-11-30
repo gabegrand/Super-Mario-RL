@@ -10,24 +10,6 @@ def testMarioPosition():
 	assert marioPosition(a) == None
 	assert marioPosition(b) == (1, 2)
 
-# Action mapping
-MAPPING = {
-    0: [0, 0, 0, 0, 0, 0],  # NOOP
-    1: [1, 0, 0, 0, 0, 0],  # Up
-    2: [0, 0, 1, 0, 0, 0],  # Down
-    3: [0, 1, 0, 0, 0, 0],  # Left
-    4: [0, 1, 0, 0, 1, 0],  # Left + A
-    5: [0, 1, 0, 0, 0, 1],  # Left + B
-    6: [0, 1, 0, 0, 1, 1],  # Left + A + B
-    7: [0, 0, 0, 1, 0, 0],  # Right
-    8: [0, 0, 0, 1, 1, 0],  # Right + A
-    9: [0, 0, 0, 1, 0, 1],  # Right + B
-    10: [0, 0, 0, 1, 1, 1],  # Right + A + B
-    11: [0, 0, 0, 0, 1, 0],  # A
-    12: [0, 0, 0, 0, 0, 1],  # B
-    13: [0, 0, 0, 0, 1, 1],  # A + B
-}
-
 def checkMovement(prev, curr, a_num, up, down, left, right):
 	assert movingUp(prev, curr, a_num) == up
 	assert movingDown(prev, curr, a_num) == down
@@ -122,33 +104,17 @@ def testMarioDirection():
 	curr = np.array([[0,0,0], [0,3,0], [0,0,0]])
 	checkMovement(prev, curr, 0, 0, 0, 0, 0)
 
-def testMarioStatus():
-	info = {'time': 3, 'player_status': -1}
-	assert marioStatus(info) == -1
-	info = {}
-	assert marioStatus(info) == None
-	info = {'player_status': 2}
-	assert marioStatus(info) == 2
-
-def testTimeRemaining():
-	info = {'time': -1, 'player_status': 1}
-	assert timeRemaining(info) == -1
-	info = {'player_status': 1}
-	assert timeRemaining(info) == None
-	info = {'time': 2}
-	assert timeRemaining(info) == 2
-
 def test_bounds(state, left, right, above, below):
-	assert groundLeftDistance(state) == left
-	assert groundRightDistance(state) == right
-	assert roofVertDistance(state) == above
-	assert groundVertDistance(state) == below
+	assert groundLeftDistance(state) == float(left) / (state.shape[1] - 1)
+	assert groundRightDistance(state) == float(right) / (state.shape[1] - 1)
+	assert roofVertDistance(state) == float(above) / state.shape[0]
+	assert groundVertDistance(state) == float(below) / state.shape[0]
 
 def test_enemy_dists(state, dLeft, dRight, dUp, dDown):
-	assert distLeftEnemy(state) == dLeft
-	assert distRightEnemy(state) == dRight
-	assert distUpEnemy(state) == dUp
-	assert distDownEnemy(state) == dDown
+	assert distLeftEnemy(state) == float(dLeft) / state.shape[1]
+	assert distRightEnemy(state) == float(dRight) / state.shape[1]
+	assert distUpEnemy(state) == float(dUp) / state.shape[0]
+	assert distDownEnemy(state) == float(dDown) / state.shape[0]
 
 def testEnemyOnScreen():
 	a = np.array([[1,1,1], [3,1,0], [0,2,1]])
@@ -204,41 +170,41 @@ def main():
 	b = np.array([[1,1,1], [0,3,0], [1,1,1]])
 	c = np.array([[1,1,1], [0,0,3], [1,1,1]])
 
-	test_bounds(a, 0, 2, 1, 1)
-	test_bounds(b, 1, 1, 1, 1)
-	test_bounds(c, 2, 0, 1, 1)
+	test_bounds(a, 0, 2, 0, 0)
+	test_bounds(b, 1, 1, 0, 0)
+	test_bounds(c, 2, 0, 0, 0)
 
 	a = np.array([[1,1,1], [3,0,0], [0,0,0]])
 	b = np.array([[1,1,1], [0,3,0], [0,0,0]])
 	c = np.array([[1,1,1], [0,0,3], [0,0,0]])
 
-	test_bounds(a, 0, 0, 1, 2)
-	test_bounds(b, 0, 0, 1, 2)
-	test_bounds(c, 0, 0, 1, 2)
+	test_bounds(a, 0, 0, 0, 1)
+	test_bounds(b, 0, 0, 0, 1)
+	test_bounds(c, 0, 0, 0, 1)
 
 	a = np.array([[0,0,0], [3,0,0], [1,1,1]])
 	b = np.array([[0,0,0], [0,3,0], [1,1,1]])
 	c = np.array([[0,0,0], [0,0,3], [1,1,1]])
 
-	test_bounds(a, 0, 2, 2, 1)
-	test_bounds(b, 1, 1, 2, 1)
-	test_bounds(c, 2, 0, 2, 1)
+	test_bounds(a, 0, 2, 1, 0)
+	test_bounds(b, 1, 1, 1, 0)
+	test_bounds(c, 2, 0, 1, 0)
 
 	a = np.array([[1,0,1], [3,0,0], [1,0,1]])
 	b = np.array([[1,0,1], [0,3,0], [1,0,1]])
 	c = np.array([[1,0,1], [0,0,3], [1,0,1]])
 
-	test_bounds(a, 0, 0, 1, 1)
-	test_bounds(b, 1, 1, 2, 2)
-	test_bounds(c, 0, 0, 1, 1)
+	test_bounds(a, 0, 0, 0, 0)
+	test_bounds(b, 1, 1, 1, 1)
+	test_bounds(c, 0, 0, 0, 0)
 
 	a = np.array([[0,0,0,0,0], [0,0,0,0,0], [0,1,3,1,0], [0,0,0,1,0], [1,1,0,0,0]])
 	b = np.array([[0,1,0,0,0], [1,3,1,0,0], [0,0,0,0,0], [0,0,0,0,0], [0,1,1,1,1]])
 	c = np.array([[0,0,0,1,0], [0,0,0,0,0], [0,0,0,0,0], [0,0,1,3,1], [0,1,1,0,0]])
 
-	test_bounds(a, 2, 1, 3, 3)
-	test_bounds(b, 0, 3, 1, 3)
-	test_bounds(c, 2, 0, 3, 2)
+	test_bounds(a, 2, 1, 2, 2)
+	test_bounds(b, 0, 3, 0, 2)
+	test_bounds(c, 2, 0, 2, 1)
 
 	# enemy dist tests
 
@@ -274,8 +240,6 @@ def main():
 	testCanMoveRight()
 	testEnemyOnScreen()
 	testGroundBelow()
-	testTimeRemaining()
-	testMarioStatus()
 
 	print "All tests passed!"
 
