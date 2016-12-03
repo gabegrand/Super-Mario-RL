@@ -26,7 +26,7 @@ if hp.LOAD_FROM is not None:
     agent.load(hp.LOAD_FROM)
 
     # Start iterations from where we left off
-    j = int(hp.LOAD_FROM[hp.LOAD_FROM.rfind('-')+1:hp.LOAD_FROM.rfind('.pickle')]) + 1
+    j = int(hp.LOAD_FROM[hp.LOAD_FROM.rfind('-')+1:hp.LOAD_FROM.rfind('.pickle')])
     print('Starting at iteration %d' % j)
 
 else:
