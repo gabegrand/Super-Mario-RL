@@ -6,6 +6,7 @@ from ppaquette_gym_super_mario import wrappers
 import multiprocessing
 from qAgent import QLearningAgent
 from qAgent import ApproxQAgent
+from qAgent import ApproxSarsaAgent
 import hyperparameters as hp
 import features as ft
 import numpy as np
@@ -14,8 +15,13 @@ import numpy as np
 agent = None
 if hp.AGENT_TYPE == 0:
     agent = QLearningAgent()
+    print "USING EXACT Q AGENT"
 elif hp.AGENT_TYPE == 1:
     agent = ApproxQAgent()
+    print "USING APPROX Q AGENT"
+elif hp.AGENT_TYPE == 2:
+    agent = ApproxSarsaAgent()
+    print "USING APPROX SARSA AGENT"
 else:
     raise ValueError("Invalid AGENT_TYPE in hyperparameters")
 
@@ -67,13 +73,17 @@ while i <= hp.TRAINING_ITERATIONS:
     action = env.action_space.sample()
     state, reward, done, info = env.step(action)
 
+    # Choose action according to Q
+    action = agent.getAction(state)
+
     while not done:
-
-        # Choose action according to Q
-        action = agent.getAction(state)
-
         # Take action
-        newState, reward, done, info = env.step(action)
+        nextState, reward, done, info = env.step(action)
+
+        # Only factored into update for Sarsa
+        nextAction = None
+        if hp.AGENT_TYPE == 2:
+            nextAction = agent.getAction(nextState)
 
         # If Mario dies, punish
         if 'life' in info.keys() and info['life'] == 0:
@@ -87,11 +97,18 @@ while i <= hp.TRAINING_ITERATIONS:
             reward += delta
             curr_score = int(info['score'])
 
-        # Update Q values
-        agent.update(state, action, newState, reward)
+        # Update Q values; nextAction only used in Sarsa
+        agent.update({'state': state, 'action': action, 'nextState': nextState, 'nextAction': nextAction, 'reward': reward})
 
-        # Advance the state
-        state = newState
+        # Advance the state and action
+        state = nextState
+
+        # if sarsa, update differently
+        if hp.AGENT_TYPE == 2:
+            action = nextAction
+        else:
+            action = agent.getAction(nextState)
+        
 
     # Handle case where game gets stuck
     if 'ignore' in info.keys() and info['ignore'] == True:
