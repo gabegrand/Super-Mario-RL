@@ -137,14 +137,12 @@ class ApproxQAgent(QLearningAgent):
         # Ensure Mario is on the screen in both states
         # if ft.marioPosition(self.prev_state) and ft.marioPosition(state):
         if ft.marioPosition(state):
-
-            return self.getWeights() * ft.getFeatures(state, action)
             self.last_state = state
-            return w * f
+            return self.getWeights() * ft.getFeatures(state, action)
 
         # If Mario not on screen, calculate Q based on last known state
         elif self.last_state is not None:
-            w = self.getWeights() * ft.getFeatures(self.last_state, action)
+            return self.getWeights() * ft.getFeatures(self.last_state, action)
 
         # If there is no last known state, just return Q = 0
         else:
