@@ -115,6 +115,7 @@ class ApproxQAgent(QLearningAgent):
         self.gamma = hp.GAMMA
         self.actions = hp.MAPPING.keys()
         self.features = util.Counter()
+        self.last_state = None
         # self.prev_state = None
 
     def getWeights(self):
@@ -131,12 +132,18 @@ class ApproxQAgent(QLearningAgent):
         # Ensure Mario is on the screen in both states
         # if ft.marioPosition(self.prev_state) and ft.marioPosition(state):
         if ft.marioPosition(state):
-            w = self.getWeights()
-            f = ft.getFeatures(state, action)
-            # print w * f
+
+            return self.getWeights() * ft.getFeatures(state, action)
+            self.last_state = state
             return w * f
+
+        # If Mario not on screen, calculate Q based on last known state
+        elif self.last_state is not None:
+            w = self.getWeights() * ft.getFeatures(self.last_state, action)
+
+        # If there is no last known state, just return Q = 0
         else:
-            print "getQValue: Mario not on screen"
+            print "getQValue: Mario not on screen and no cached last state. Returning 0."
             return 0
 
     def update(self, state, action, nextState, reward):
@@ -164,7 +171,6 @@ class ApproxQAgent(QLearningAgent):
             new_weights[feature] = self.weights[feature] + self.alpha * ((reward + self.gamma * nextStateValue) - self.getQValue(state, action)) * self.features[feature]
 
         self.weights = new_weights
-        print self.weights
 
     def numStatesLearned(self):
         return None

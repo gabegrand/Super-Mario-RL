@@ -64,8 +64,6 @@ while i <= hp.TRAINING_ITERATIONS:
 
     while not done:
 
-        # time.sleep(1)
-
         # Choose action according to Q
         action = agent.getAction(state)
 
