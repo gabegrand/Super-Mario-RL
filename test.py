@@ -11,6 +11,21 @@ import hyperparameters as hp
 import features as ft
 import numpy as np
 
+# Initialize environment
+print('-- Creating environment...')
+env = gym.make(hp.LEVEL)
+
+print('-- Acquiring multiprocessing lock')
+multiprocessing_lock = multiprocessing.Lock()
+env.configure(lock=multiprocessing_lock)
+
+# Discretize action space to 14 possible button combinations
+wrapper = wrappers.ToDiscrete()
+env = wrapper(env)
+
+print('-- Resetting environment')
+env.reset()
+
 # Initialize the correct agent
 agent = None
 if hp.AGENT_TYPE == 0:
@@ -45,23 +60,6 @@ num_freezes = 0
 print('-- START training iterations')
 i = 1
 while i <= hp.TRAINING_ITERATIONS:
-
-    print('-- START creating environment')
-    env = gym.make(hp.LEVEL)
-    print('-- DONE creating environment')
-
-    print('-- START acquiring multiprocessing lock')
-    multiprocessing_lock = multiprocessing.Lock()
-    env.configure(lock=multiprocessing_lock)
-    print('-- DONE acquiring multiprocessing lock')
-
-    # Discretize action space to 14 possible button combinations
-    wrapper = wrappers.ToDiscrete()
-    env = wrapper(env)
-
-    print('-- START resetting environment')
-    env.reset()
-    print('-- DONE resetting environment')
 
     print('-- START playing iteration %d / %d' % (i + j, hp.TRAINING_ITERATIONS + j))
     done = False
@@ -108,7 +106,7 @@ while i <= hp.TRAINING_ITERATIONS:
             action = nextAction
         else:
             action = agent.getAction(nextState)
-        
+
 
     # Handle case where game gets stuck
     if 'ignore' in info.keys() and info['ignore'] == True:
@@ -134,8 +132,7 @@ while i <= hp.TRAINING_ITERATIONS:
         print('Iteration %d / %d complete.' % (i + j, hp.TRAINING_ITERATIONS + j))
         i += 1
 
-    print('-- DONE playing')
-    env.close()
-
 print('-- DONE training iterations')
+env.close()
+
 print diagnostics

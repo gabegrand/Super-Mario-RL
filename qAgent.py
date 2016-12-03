@@ -17,15 +17,10 @@ class QLearningAgent:
         self.actions = hp.MAPPING.keys()
 
     def getNValue(self, state, action):
-        # Convert numpy array to string
         return self.N[str(state), action]
 
     def getQValue(self, state, action):
-
-        # Convert numpy array to string
-        state = str(state)
-
-        return self.Q[state, action]
+        return self.Q[str(state), action]
 
     def computeValueFromQValues(self, state):
 
@@ -36,7 +31,7 @@ class QLearningAgent:
         for action in self.actions:
             # avoid dividing by zero by adding 1
             action_values[action] = self.getQValue(state, action) + hp.K / (self.getNValue(state, action) + 1.0)
-            
+
 
         # Return max value
         return action_values[action_values.argMax()]
@@ -62,16 +57,9 @@ class QLearningAgent:
         # Return action with max value, breaking ties randomly
         action = self.actions[random.choice(indices)]
 
-        # print "Action: %d, Value: %f" % (action, max_value)
-
         return action
 
     def getAction(self, state):
-        """
-          Compute the action to take in the current state.  With
-          probability self.epsilon, we should take a random action and
-          take the best policy action otherwise.
-        """
 
         # With probability epsilon, choose random action
         if util.flipCoin(self.epsilon):
