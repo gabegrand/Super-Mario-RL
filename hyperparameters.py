@@ -7,16 +7,18 @@ TRAINING_ITERATIONS = 10
 # Whether to load from existing Q values file
 LOAD_FROM = None
 
-# How often to save Q values
+# How often to save desired values
 SAVE_EVERY = 10
 
 # 0 is regular QLearningAgent, 1 is ApproxQAgent
-AGENT_TYPE = 1
+AGENT_TYPE = 0
 
 # Q Learning Agent Parameters
-ALPHA = 0.001     # Learning rate
+ALPHA = 0.1     # Learning rate
 EPSILON = 0.2   # Random move probability
 GAMMA = 0.5     # Discount factor
+
+K = 10.0 # k value for exploration function, should be a float; set to 0 to ignore
 
 # Penalty for dying in reward function
 DEATH_PENALTY = 100
