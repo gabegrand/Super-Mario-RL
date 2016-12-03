@@ -10,8 +10,8 @@ LOAD_FROM = None
 # How often to save desired values
 SAVE_EVERY = 10
 
-# 0 is regular QLearningAgent, 1 is ApproxQAgent
-AGENT_TYPE = 0
+# 0 is regular QLearningAgent, 1 is ApproxQAgent, 2 is ApproxSarsaAgent
+AGENT_TYPE = 2
 
 # Q Learning Agent Parameters
 ALPHA = 0.1     # Learning rate

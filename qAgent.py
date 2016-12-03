@@ -83,18 +83,21 @@ class QLearningAgent:
 
         return action
 
-    def update(self, state, action, nextState, reward):
+    # update vals should consist of state, action, nextState, and reward
+    def update(self, update_dict):
 
-        # Convert numpy array to string
-        state = str(state)
+        state = update_dict['state']
+        action = update_dict['action']
+        nextState = update_dict['nextState']
+        reward = update_dict['reward']
 
-        self.N[state, action] += 1
+        self.N[str(state), action] += 1
 
         # Compute value of nextState
         nextStateValue = self.computeValueFromQValues(nextState)
 
         # Update Q value with running average based on observed sample
-        self.Q[state, action] = (1 - self.alpha) * self.getQValue(state, action) + self.alpha * (reward + self.gamma * nextStateValue)
+        self.Q[str(state), action] = (1 - self.alpha) * self.getQValue(state, action) + self.alpha * (reward + self.gamma * nextStateValue)
 
     def numStatesLearned(self):
         return len(self.Q.keys())
@@ -153,7 +156,13 @@ class ApproxQAgent(QLearningAgent):
             print "getQValue: Mario not on screen"
             return 0
 
-    def update(self, state, action, nextState, reward):
+    # update_dict should consist of 'state', 'action', 'nextState', and 'reward'
+    def update(self, update_dict):
+
+        state = update_dict['state']
+        action = update_dict['action']
+        nextState = update_dict['nextState']
+        reward = update_dict['reward']
 
         self.N[str(state), action] += 1
 
@@ -208,7 +217,14 @@ class ApproxQAgent(QLearningAgent):
 class ApproxSarsaAgent(ApproxQAgent):
 
     # only method that is different
-    def update(self, state, action, nextState, nextAction, reward):
+    # update_dict must consist of state, action, nextState, nextAction, reward
+    def update(self, update_dict):
+
+        state = update_dict['state']
+        action = update_dict['action']
+        nextState = update_dict['nextState']
+        nextAction = update_dict['nextAction']
+        reward = update_dict['reward']
 
         self.N[str(state), action] += 1
 

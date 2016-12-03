@@ -6,7 +6,6 @@ save/*.pickle
 # Kevin Additions #
 ############
 *.pyc
-*.sh
 *.aux
 *.gz
 .ipynb_checkpoints
