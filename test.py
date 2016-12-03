@@ -24,9 +24,6 @@ env.configure(lock=multiprocessing_lock)
 wrapper = wrappers.ToDiscrete()
 env = wrapper(env)
 
-print('-- Resetting environment')
-env.reset()
-
 # Initialize the correct agent
 agent = None
 if hp.AGENT_TYPE == 0:
@@ -54,6 +51,9 @@ if hp.LOAD_FROM is not None:
 else:
     j = 0
 
+# Initialize reward function
+rewardFunction = rewardModel()
+
 # Diagnostics
 diagnostics = {}
 num_freezes = 0
@@ -62,11 +62,11 @@ print('-- START training iterations')
 i = 1
 while i <= hp.TRAINING_ITERATIONS:
 
+    print('-- Resetting environment')
+    env.reset()
+
     print('-- START playing iteration %d / %d' % (i + j, hp.TRAINING_ITERATIONS + j))
     done = False
-
-    # Keep track of agent's score in game
-    curr_score = 0
 
     # Sample first action randomly
     action = env.action_space.sample()
@@ -81,7 +81,9 @@ while i <= hp.TRAINING_ITERATIONS:
         nextState, reward, done, info = env.step(action)
 
         # Compute custom reward
-        reward = rewardModel(reward, info, curr_score)
+        reward = rewardFunction.getReward(reward, info)
+
+        print action, reward
 
         # Only factored into update for Sarsa
         nextAction = None

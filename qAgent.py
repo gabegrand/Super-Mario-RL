@@ -5,6 +5,7 @@ import pickle
 from datetime import datetime
 import hyperparameters as hp
 import features as ft
+import math
 
 class QLearningAgent:
 
@@ -31,7 +32,6 @@ class QLearningAgent:
         for action in self.actions:
             # avoid dividing by zero by adding 1
             action_values[action] = self.getQValue(state, action) + hp.K / (self.getNValue(state, action) + 1.0)
-
 
         # Return max value
         return action_values[action_values.argMax()]

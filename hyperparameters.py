@@ -1,17 +1,17 @@
 # Game
-WORLD = '1-1'
+WORLD = '1-3'
 LEVEL = 'ppaquette/SuperMarioBros-' + WORLD + '-Tiles-v0'
 
 TRAINING_ITERATIONS = 10
 
 # Whether to load from existing Q values file
-LOAD_FROM = None
+LOAD_FROM = '2016-12-3-17-4-world-1-3-iter-10.pickle'
 
 # How often to save desired values
 SAVE_EVERY = 10
 
 # 0 is regular QLearningAgent, 1 is ApproxQAgent, 2 is ApproxSarsaAgent
-AGENT_TYPE = 0
+AGENT_TYPE = 1
 
 # Q Learning Agent Parameters
 ALPHA = 0.1     # Learning rate
