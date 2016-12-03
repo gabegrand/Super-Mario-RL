@@ -9,6 +9,7 @@ from qAgent import ApproxQAgent
 from qAgent import ApproxSarsaAgent
 import hyperparameters as hp
 import features as ft
+from rewardModel import rewardModel
 import numpy as np
 
 # Initialize environment
@@ -75,41 +76,36 @@ while i <= hp.TRAINING_ITERATIONS:
     action = agent.getAction(state)
 
     while not done:
+
         # Take action
         nextState, reward, done, info = env.step(action)
+
+        # Compute custom reward
+        reward = rewardModel(reward, info, curr_score)
 
         # Only factored into update for Sarsa
         nextAction = None
         if hp.AGENT_TYPE == 2:
             nextAction = agent.getAction(nextState)
 
-        # If Mario dies, punish
-        if 'life' in info.keys() and info['life'] == 0:
-            print("Oh no! Mario died!")
-            reward -= hp.DEATH_PENALTY
-
-        # If Mario's score increases, reward
-        if 'score' in info.keys() and int(info['score']) > curr_score:
-            delta = (int(info['score']) - curr_score) * hp.SCORE_FACTOR
-            print("Bling! Score up by %d" % delta)
-            reward += delta
-            curr_score = int(info['score'])
-
         # Update Q values; nextAction only used in Sarsa
-        agent.update({'state': state, 'action': action, 'nextState': nextState, 'nextAction': nextAction, 'reward': reward})
+        agent.update({'state': state,
+                      'action': action,
+                      'nextState': nextState,
+                      'nextAction': nextAction,
+                      'reward': reward})
 
         # Advance the state and action
         state = nextState
 
-        # if sarsa, update differently
+        # Choose next action according to Q. If SARSA, choose differently.
         if hp.AGENT_TYPE == 2:
             action = nextAction
         else:
             action = agent.getAction(nextState)
 
-
     # Handle case where game gets stuck
-    if 'ignore' in info.keys() and info['ignore'] == True:
+    if 'ignore' in info.keys() and info['ignore']:
         print('Game stuck. Resetting...')
         num_freezes += 1
     else:
