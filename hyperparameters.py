@@ -5,7 +5,7 @@ LEVEL = 'ppaquette/SuperMarioBros-' + WORLD + '-Tiles-v0'
 TRAINING_ITERATIONS = 10
 
 # Whether to load from existing Q values file
-LOAD_FROM = '2016-12-3-17-4-world-1-3-iter-10.pickle'
+LOAD_FROM = None
 
 # How often to save desired values
 SAVE_EVERY = 10
@@ -25,6 +25,9 @@ DEATH_PENALTY = 100
 
 # Proportion of score increase added to reward (0 to 1)
 SCORE_FACTOR = 1
+
+# How many timesteps to repeat an action
+ACTION_DURATION = 5
 
 # Action mapping
 MAPPING = {

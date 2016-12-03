@@ -75,36 +75,42 @@ while i <= hp.TRAINING_ITERATIONS:
     # Choose action according to Q
     action = agent.getAction(state)
 
+    # Repeat each action for set number of timesteps
+    action_counter = hp.ACTION_DURATION
+
     while not done:
 
         # Take action
         nextState, reward, done, info = env.step(action)
+        action_counter -= 1
 
-        # Compute custom reward
-        reward = rewardFunction.getReward(reward, info)
+        # Update Q values and compute next action
+        if action_counter <= 0:
 
-        print action, reward
+            # Compute custom reward
+            reward = rewardFunction.getReward(reward, info)
 
-        # Only factored into update for Sarsa
-        nextAction = None
-        if hp.AGENT_TYPE == 2:
-            nextAction = agent.getAction(nextState)
+            # Only factored into update for Sarsa
+            nextAction = None
+            if hp.AGENT_TYPE == 2:
+                nextAction = agent.getAction(nextState)
 
-        # Update Q values; nextAction only used in Sarsa
-        agent.update({'state': state,
-                      'action': action,
-                      'nextState': nextState,
-                      'nextAction': nextAction,
-                      'reward': reward})
+            # Update Q values; nextAction only used in Sarsa
+            agent.update({'state': state,
+                          'action': action,
+                          'nextState': nextState,
+                          'nextAction': nextAction,
+                          'reward': reward})
 
-        # Advance the state and action
-        state = nextState
+            # Advance the state and action
+            state = nextState
 
         # Choose next action according to Q. If SARSA, choose differently.
-        if hp.AGENT_TYPE == 2:
-            action = nextAction
-        else:
-            action = agent.getAction(nextState)
+            if hp.AGENT_TYPE == 2:
+                action = nextAction
+            else:
+                action = agent.getAction(nextState)
+            action_counter = hp.ACTION_DURATION
 
     # Handle case where game gets stuck
     if 'ignore' in info.keys() and info['ignore']:
