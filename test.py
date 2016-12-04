@@ -139,6 +139,8 @@ while i <= hp.TRAINING_ITERATIONS:
             print('Saving Q values...')
             agent.save(i, j)
 
+        print agent.getWeights()
+
         # Go to next iteration
         print('Iteration %d / %d complete.' % (i + j, hp.TRAINING_ITERATIONS + j))
         i += 1

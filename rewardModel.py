@@ -5,7 +5,7 @@ Takes as input the default reward returned by the environment, and returns
 a new reward based on our custom reward function.
 """
 
-class rewardModel():
+class rewardModel:
 
     def __init__(self):
         self.curr_score = 0

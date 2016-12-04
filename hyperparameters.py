@@ -17,7 +17,7 @@ SAVE_EVERY = 10
 AGENT_TYPE = 1
 
 # Q Learning Agent Parameters
-ALPHA = 0.1     # Learning rate
+ALPHA = 0.2     # Learning rate
 EPSILON = 0.2   # Random move probability
 GAMMA = 0.5     # Discount factor
 
@@ -30,7 +30,7 @@ DEATH_PENALTY = 100
 SCORE_FACTOR = 1
 
 # How many timesteps to repeat an action
-ACTION_DURATION = 5
+ACTION_DURATION = 4
 
 # Action mapping
 MAPPING = {
