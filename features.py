@@ -20,8 +20,8 @@ def getFeatures(prev_state, state, action):
 
 	features['canMoveLeft'] = canMoveLeft(state)
 	features['canMoveRight'] = canMoveRight(state)
-	features['canMoveUp'] = canMoveLeft(state)
-	features['canMoveDown'] = canMoveLeft(state)
+	features['canMoveUp'] = canMoveUp(state)
+	features['canMoveDown'] = canMoveDown(state)
 	features['movingLeft'] = movingLeft(prev_state, state, action)
 	features['movingRight'] = movingRight(prev_state, state, action)
 	features['movingUp'] = movingUp(prev_state, state, action)
