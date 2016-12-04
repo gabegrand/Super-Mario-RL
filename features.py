@@ -1,18 +1,20 @@
+import hyperparameters as hp
 import numpy as np
 import sys
 import util
 
 # Returns a vector (actually a util.Counter object) of features
-def getFeatures(state, action):
+def getFeatures(prev_state, state, action):
 
 	# Get Mario's position
-	# prev_mpos = marioPosition(prev_state)
+	prev_mpos = marioPosition(prev_state)
 	curr_mpos = marioPosition(state)
 
-	# Make sure Mario is on the screen
-	# if not (prev_mpos and curr_mpos):
+	# Make sure Mario is currently on the screen
+	if not prev_mpos:
+		raise ValueError("getFeatures: prev_mpos is None")
 	if not curr_mpos:
-		raise ValueError("getFeatures: Mario position is None")
+		raise ValueError("getFeatures: curr_mpos is None")
 
 	features = util.Counter()
 
@@ -20,10 +22,6 @@ def getFeatures(state, action):
 	features['canMoveRight'] = canMoveRight(state)
 	features['canMoveUp'] = canMoveLeft(state)
 	features['canMoveDown'] = canMoveLeft(state)
-	# features['movingUp'] = movingUp(prev_state, state, action)
-	# features['movingDown'] = movingDown(prev_state, state, action)
-	# features['movingLeft'] = movingLeft(prev_state, state, action)
-	# features['movingRight'] = movingRight(prev_state, state, action)
 	features['groundVertDistance'] = groundVertDistance(state)
 	features['roofVertDistance'] = roofVertDistance(state)
 	features['groundLeftDistance'] = groundLeftDistance(state)
@@ -43,9 +41,14 @@ def getFeatures(state, action):
 # For functions in this file, use _marioPosition, since functions
 # should only be called if mario is on screen
 def marioPosition(state):
+	if not state.any():
+		if hp.DISPLAY_WARNINGS:
+			print "WARNING: state is null"
+		return None
 	rows, cols = np.nonzero(state == 3)
 	if rows.size == 0 or cols.size == 0:
-		print "WARNING: Mario is off the map"
+		if hp.DISPLAY_WARNINGS:
+			print "WARNING: Mario is off the map"
 		return None
 	else:
 		return rows[0], cols[0]

@@ -17,6 +17,9 @@ class QLearningAgent:
         self.gamma = hp.GAMMA
         self.actions = hp.MAPPING.keys()
 
+    def reset(self):
+        return None
+
     def getNValue(self, state, action):
         return self.N[str(state), action]
 
@@ -120,34 +123,17 @@ class ApproxQAgent(QLearningAgent):
         self.gamma = hp.GAMMA
         self.actions = hp.MAPPING.keys()
         self.features = util.Counter()
-        self.last_state = None
-        # self.prev_state = None
+        self.prev_state = np.array([])
+
+    def reset(self):
+        self.features = util.Counter()
+        self.prev_state = np.array([])
 
     def getWeights(self):
         return self.weights
 
     def getQValue(self, state, action):
-
-        # Handle initial case where there is no previous state
-        # if self.prev_state is None:
-        #     print "getQValue: Prev state is none; returning 0"
-        #     return 0
-
-        # else:
-        # Ensure Mario is on the screen in both states
-        # if ft.marioPosition(self.prev_state) and ft.marioPosition(state):
-        if ft.marioPosition(state):
-            self.last_state = state
-            return self.getWeights() * ft.getFeatures(state, action)
-
-        # If Mario not on screen, calculate Q based on last known state
-        elif self.last_state is not None:
-            return self.getWeights() * ft.getFeatures(self.last_state, action)
-
-        # If there is no last known state, just return Q = 0
-        else:
-            print "getQValue: Mario not on screen and no cached last state. Returning 0."
-            return 0
+        return self.getWeights() * self.features
 
     # update_dict should consist of 'state', 'action', 'nextState', and 'reward'
     def update(self, update_dict):
@@ -157,20 +143,14 @@ class ApproxQAgent(QLearningAgent):
         nextState = update_dict['nextState']
         reward = update_dict['reward']
 
+        # Update exploration function
         self.N[str(state), action] += 1
 
         # Ensure Mario is on the screen in both states
-        # if ft.marioPosition(state) and ft.marioPosition(nextState):
-        if ft.marioPosition(nextState):
+        if ft.marioPosition(self.prev_state) and ft.marioPosition(state):
 
             # Update features
-            features = ft.getFeatures(nextState, action)
-            self.features = features
-        else:
-            print "update: Mario not on screen"
-
-        # Update prev state
-        self.prev_state = state
+            self.features = ft.getFeatures(self.prev_state, state, action)
 
         # Compute value of nextState
         nextStateValue = self.computeValueFromQValues(nextState)
@@ -182,6 +162,9 @@ class ApproxQAgent(QLearningAgent):
             new_weights[feature] = self.weights[feature] + self.alpha * ((reward + self.gamma * nextStateValue) - self.getQValue(state, action)) * self.features[feature]
 
         self.weights = new_weights
+
+        # Update prev state
+        self.prev_state = state
 
     def numStatesLearned(self):
         return None
@@ -234,7 +217,7 @@ class ApproxSarsaAgent(ApproxQAgent):
         self.prev_state = state
 
         # Compute value of nextState SARSA style
-        nextStateValue = self.getQValue(nextState, nextAction)
+        nextStateValue = self.getQValue(state, nextAction)
 
         # Batch update weights
         new_weights = util.Counter()

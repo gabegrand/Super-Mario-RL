@@ -12,18 +12,6 @@ import features as ft
 from rewardModel import rewardModel
 import numpy as np
 
-# Initialize environment
-print('-- Creating environment...')
-env = gym.make(hp.LEVEL)
-
-print('-- Acquiring multiprocessing lock')
-multiprocessing_lock = multiprocessing.Lock()
-env.configure(lock=multiprocessing_lock)
-
-# Discretize action space to 14 possible button combinations
-wrapper = wrappers.ToDiscrete()
-env = wrapper(env)
-
 # Initialize the correct agent
 agent = None
 if hp.AGENT_TYPE == 0:
@@ -62,15 +50,30 @@ print('-- START training iterations')
 i = 1
 while i <= hp.TRAINING_ITERATIONS:
 
+    # Initialize environment
+    print('-- Creating environment...')
+    env = gym.make(hp.LEVEL)
+
+    print('-- Acquiring multiprocessing lock')
+    multiprocessing_lock = multiprocessing.Lock()
+    env.configure(lock=multiprocessing_lock)
+
+    # Discretize action space to 14 possible button combinations
+    wrapper = wrappers.ToDiscrete()
+    env = wrapper(env)
+
     print('-- Resetting environment')
     env.reset()
 
+    print('-- Resetting agent')
+    agent.reset()
+
     print('-- START playing iteration %d / %d' % (i + j, hp.TRAINING_ITERATIONS + j))
-    done = False
+    done = dead = False
 
     # Sample first action randomly
     action = env.action_space.sample()
-    state, reward, done, info = env.step(action)
+    state, reward, _, info = env.step(action)
 
     # Choose action according to Q
     action = agent.getAction(state)
@@ -81,11 +84,15 @@ while i <= hp.TRAINING_ITERATIONS:
     while not done:
 
         # Take action
-        nextState, reward, done, info = env.step(action)
+        nextState, reward, dead, info = env.step(action)
         action_counter -= 1
 
         # Update Q values and compute next action
         if action_counter <= 0:
+
+            # Check if Mario is dead
+            if dead:
+                done = True
 
             # Compute custom reward
             reward = rewardFunction.getReward(reward, info)
@@ -105,7 +112,7 @@ while i <= hp.TRAINING_ITERATIONS:
             # Advance the state and action
             state = nextState
 
-        # Choose next action according to Q. If SARSA, choose differently.
+            # Choose next action according to Q. If SARSA, choose differently.
             if hp.AGENT_TYPE == 2:
                 action = nextAction
             else:
@@ -136,7 +143,9 @@ while i <= hp.TRAINING_ITERATIONS:
         print('Iteration %d / %d complete.' % (i + j, hp.TRAINING_ITERATIONS + j))
         i += 1
 
+    print('-- Closing environment')
+    env.close()
+
 print('-- DONE training iterations')
-env.close()
 
 print diagnostics

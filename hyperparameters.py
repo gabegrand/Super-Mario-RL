@@ -1,3 +1,6 @@
+# Whether to display certain warnings used for testing
+DISPLAY_WARNINGS = False
+
 # Game
 WORLD = '1-3'
 LEVEL = 'ppaquette/SuperMarioBros-' + WORLD + '-Tiles-v0'
