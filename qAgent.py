@@ -95,13 +95,13 @@ class QLearningAgent:
     def numStatesLearned(self):
         return len(self.Q.keys())
 
-    def save(self, i, j):
+    def save(self, i, j, diagnostics):
 
         # Build save file name
         now = datetime.now()
         fname = '-'.join([str(x) for x in [now.year, now.month, now.day, now.hour, now.minute]]) + '-world-' + hp.WORLD + '-iter-' + str(i + j)
 
-        saved_vals = {'Q': self.Q, 'N': self.N}
+        saved_vals = {'Q': self.Q, 'N': self.N, 'diagnostics': diagnostics}
 
         with open('save/' + fname + '.pickle', 'wb') as handle:
             pickle.dump(saved_vals, handle)
@@ -172,13 +172,13 @@ class ApproxQAgent(QLearningAgent):
     def numStatesLearned(self):
         return None
 
-    def save(self, i, j):
+    def save(self, i, j, diagnostics):
 
         # Build save file name
         now = datetime.now()
         fname = '-'.join([str(x) for x in [now.year, now.month, now.day, now.hour, now.minute]]) + '-world-' + hp.WORLD + '-iter-' + str(i + j)
 
-        saved_vals = {'weights': self.weights, 'N': self.N}
+        saved_vals = {'weights': self.weights, 'N': self.N, 'diagnostics': diagnostics}
 
         with open('save/' + fname + '.pickle', 'wb') as handle:
             pickle.dump(saved_vals, handle)

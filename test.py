@@ -112,7 +112,7 @@ while i <= hp.TRAINING_ITERATIONS:
             # Advance the state and action
             state = nextState
 
-            # Choose next action according to Q. If SARSA, choose differently.
+            # Choose next action according to Q. If SARSA, nextAction has already been chosen.
             if hp.AGENT_TYPE == 2:
                 action = nextAction
             else:
@@ -137,7 +137,7 @@ while i <= hp.TRAINING_ITERATIONS:
         # Save Q-values
         if i % hp.SAVE_EVERY == 0:
             print('Saving Q values...')
-            agent.save(i, j)
+            agent.save(i, j, diagnostics[i])
 
         print agent.getWeights()
 
