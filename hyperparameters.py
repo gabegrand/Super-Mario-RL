@@ -50,5 +50,23 @@ MAPPING = {
     13: [0, 0, 0, 0, 1, 1],  # A + B
 }
 
+# needs to be float
+NORM = 50.0
+
 # prior dist on actions
-PRIOR = [1,2,1,1,1,1,1,4,3,6,5,2,1,1]
+PRIOR = [
+    1/NORM,    #0
+    1/NORM,    #1
+    1/NORM,    #2
+    1/NORM,    #3
+    1/NORM,    #4
+    1/NORM,    #5
+    1/NORM,    #6
+    10/NORM,    #7
+    10/NORM,    #8
+    10/NORM,    #9
+    10/NORM,    #10
+    1/NORM,    #11
+    1/NORM,    #12
+    1/NORM,    #13
+    ]

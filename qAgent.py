@@ -66,8 +66,7 @@ class QLearningAgent:
 
         # With probability epsilon, choose random action
         if util.flipCoin(max(hp.MIN_EPSILON, 5.0 / (5.0 + self.iter))):
-            action = np.random.choice(self.actions, 1, hp.PRIOR)[0]
-            print "ac, iter", action, self.iter
+            action = np.random.choice(self.actions, 1, p=hp.PRIOR)[0]
             self.iter += 1
 
         # With probability 1 - epsilon, choose best action according to Q values
