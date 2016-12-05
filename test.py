@@ -5,8 +5,8 @@ import gym_pull
 from ppaquette_gym_super_mario import wrappers
 import multiprocessing
 from qAgent import QLearningAgent
-from qAgent import ApproxQAgent
-from qAgent import ApproxSarsaAgent
+from approxQAgent import ApproxQAgent
+from approxSarsaAgent import ApproxSarsaAgent
 import hyperparameters as hp
 import features as ft
 from rewardModel import rewardModel
