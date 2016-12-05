@@ -4,7 +4,7 @@ import sys
 import util
 
 # Returns a vector (actually a util.Counter object) of features
-def getFeatures(prev_state, state, action):
+def getFeatures(prev_state, state, action, orig_reward):
 
 	# Get Mario's position
 	prev_mpos = marioPosition(prev_state)
@@ -22,8 +22,8 @@ def getFeatures(prev_state, state, action):
 	features['canMoveRight'] = canMoveRight(state)
 	features['canMoveUp'] = canMoveUp(state)
 	features['canMoveDown'] = canMoveDown(state)
-	features['movingLeft'] = movingLeft(prev_state, state, action)
-	features['movingRight'] = movingRight(prev_state, state, action)
+	features['movingLeft'] = movingLeft(orig_reward)
+	features['movingRight'] = movingRight(orig_reward)
 	features['movingUp'] = movingUp(prev_state, state, action)
 	features['movingDown'] = movingDown(prev_state, state, action)
 	features['groundVertDistance'] = groundVertDistance(state)
@@ -93,7 +93,12 @@ def movingDown(prev_state, curr_state, action_num):
 
 # Binary feature as to whether Mario is moving left
 # Only call if mario is currently on screen
-def movingLeft(prev_state, curr_state, action_num):
+def movingLeft(orig_reward):
+	if orig_reward < 0:
+		return 1.0
+	else:
+		return 0.0
+	"""
 	prev_mpos = marioPosition(prev_state)
 	curr_mpos = marioPosition(curr_state)
 	assert curr_mpos is not None
@@ -106,10 +111,16 @@ def movingLeft(prev_state, curr_state, action_num):
 		return 1.0
 	else:
 		return 0.0
+	"""
 
 # Binary feature as to whether Mario is moving right
 # Only call if mario is currently on screen
-def movingRight(prev_state, curr_state, action_num):
+def movingRight(orig_reward):
+	if orig_reward > 0:
+		return 1.0
+	else:
+		return 0.0
+	"""
 	prev_mpos = marioPosition(prev_state)
 	curr_mpos = marioPosition(curr_state)
 	assert curr_mpos is not None
@@ -122,6 +133,7 @@ def movingRight(prev_state, curr_state, action_num):
 		return 1.0
 	else:
 		return 0.0
+	"""
 
 
 # Returns the number of rows between Mario and the roof (0 if next level is roof)

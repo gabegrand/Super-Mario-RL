@@ -14,10 +14,11 @@ class rewardModel:
 
         # Encourage Mario to go right
         if reward > 0:
-            reward *= 2
+            reward *= 10
         # Penalize Mario for standing still
         else:
             reward -= 1
+            reward *= 10
 
         # If Mario dies, punish
         if 'life' in info.keys() and info['life'] == 0:

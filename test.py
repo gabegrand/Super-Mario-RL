@@ -84,7 +84,7 @@ while i <= hp.TRAINING_ITERATIONS:
     while not done:
 
         # Take action
-        nextState, reward, dead, info = env.step(action)
+        nextState, orig_reward, dead, info = env.step(action)
         action_counter -= 1
 
         # Update Q values and compute next action
@@ -95,7 +95,7 @@ while i <= hp.TRAINING_ITERATIONS:
                 done = True
 
             # Compute custom reward
-            reward = rewardFunction.getReward(reward, info)
+            reward = rewardFunction.getReward(orig_reward, info)
 
             # Only factored into update for Sarsa
             nextAction = None
@@ -107,7 +107,8 @@ while i <= hp.TRAINING_ITERATIONS:
                           'action': action,
                           'nextState': nextState,
                           'nextAction': nextAction,
-                          'reward': reward})
+                          'reward': reward,
+                          'orig_reward': orig_reward})
 
             # Advance the state and action
             state = nextState
