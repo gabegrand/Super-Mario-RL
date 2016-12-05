@@ -66,8 +66,8 @@ class QLearningAgent:
 
         # With probability epsilon, choose random action
         if util.flipCoin(max(hp.MIN_EPSILON, 5.0 / (5.0 + self.iter))):
-            action = np.random.choice(self.actions, 1, hp.PRIOR)[0]
-            print "ac, iter", action, self.iter
+            action = np.random.choice(self.actions, 1, p=hp.PRIOR)[0]
+            print action
             self.iter += 1
 
         # With probability 1 - epsilon, choose best action according to Q values
@@ -145,6 +145,7 @@ class ApproxQAgent(QLearningAgent):
         action = update_dict['action']
         nextState = update_dict['nextState']
         reward = update_dict['reward']
+        orig_reward = update_dict['orig_reward']
 
         # Update exploration function
         self.N[str(state), action] += 1
@@ -153,7 +154,7 @@ class ApproxQAgent(QLearningAgent):
         if ft.marioPosition(self.prev_state) and ft.marioPosition(state):
 
             # Update features
-            self.features = ft.getFeatures(self.prev_state, state, action)
+            self.features = ft.getFeatures(self.prev_state, state, action, orig_reward)
 
         # Compute value of nextState
         nextStateValue = self.computeValueFromQValues(nextState)

@@ -24,7 +24,7 @@ GAMMA = 0.5     # Discount factor
 K = 10.0 # k value for exploration function, should be a float; set to 0 to ignore
 
 # Penalty for dying in reward function
-DEATH_PENALTY = 100
+DEATH_PENALTY = 1000
 
 # Proportion of score increase added to reward (0 to 1)
 SCORE_FACTOR = 1
@@ -51,4 +51,22 @@ MAPPING = {
 }
 
 # prior dist on actions
-PRIOR = [1,2,1,1,1,1,1,4,3,6,5,2,1,1]
+_prior = [
+    1, #0
+    1,  #1
+    1,  #2
+    1,  #3
+    1,  #4
+    1,  #5
+    1,  #6
+    1,  #7
+    13,  #8
+    13,  #9
+    13,  #10
+    13,  #11
+    1,  #12
+    1,  #13
+    ]
+
+
+PRIOR = map(lambda x: float(x) / sum(_prior), _prior)
