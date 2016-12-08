@@ -39,9 +39,6 @@ if hp.LOAD_FROM is not None:
 else:
     j = 0
 
-# Initialize reward function
-rewardFunction = rewardModel()
-
 # Diagnostics
 diagnostics = {}
 num_freezes = 0
@@ -67,6 +64,9 @@ while i <= hp.TRAINING_ITERATIONS:
 
     print('-- Resetting agent')
     agent.reset()
+
+    # Initialize reward function
+    rewardFunction = rewardModel()
 
     print('-- START playing iteration %d / %d' % (i + j, hp.TRAINING_ITERATIONS + j))
     done = dead = False
