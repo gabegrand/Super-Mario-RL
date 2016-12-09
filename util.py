@@ -16,7 +16,32 @@ import sys
 import inspect
 import heapq, random
 import cStringIO
+import numpy as np
 
+# Represents state in the approximate Q and SARSA algs
+# Previous state is tracked for veclity feature purposes
+class State:
+    def __init__(self, curr, prev):
+        self.setCurr(curr)
+        self.setPrev(prev)
+
+    def getCurr(self):
+        return self.curr
+
+    def getPrev(self):
+        return self.prev
+
+    def setCurr(self, curr):
+        assert isinstance(curr, np.ndarray)
+        self.curr = curr
+
+    def setPrev(self, prev):
+        assert prev is None or isinstance(prev, np.ndarray)
+        self.prev = prev
+
+    def step(self, newState):
+        self.setPrev(self.getCurr())
+        self.setCurr(newState)
 
 class FixedRandom:
     def __init__(self):
@@ -253,7 +278,7 @@ class Counter(dict):
     also be normalized and their total count and arg max can be extracted.
     """
     def __getitem__(self, idx):
-        self.setdefault(idx, 0)
+        self.setdefault(idx, 1)
         return dict.__getitem__(self, idx)
 
     def incrementAll(self, keys, count):

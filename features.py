@@ -4,38 +4,39 @@ import sys
 import util
 
 # Returns a vector (actually a util.Counter object) of features
-def getFeatures(prev_state, state, action):
+def getFeatures(state):
+	assert isinstance(state, util.State)
+
+	curr_state = state.getCurr()
+	prev_state = state.getPrev()
 
 	# Get Mario's position
-	prev_mpos = marioPosition(prev_state)
-	curr_mpos = marioPosition(state)
+	curr_mpos = util.marioPosition(curr_state)
 
 	# Make sure Mario is currently on the screen
-	if not prev_mpos:
-		raise ValueError("getFeatures: prev_mpos is None")
 	if not curr_mpos:
 		raise ValueError("getFeatures: curr_mpos is None")
 
 	features = util.Counter()
 
-	features['canMoveLeft'] = canMoveLeft(state)
-	features['canMoveRight'] = canMoveRight(state)
-	features['canMoveUp'] = canMoveUp(state)
-	features['canMoveDown'] = canMoveDown(state)
-	features['movingLeft'] = movingLeft(prev_state, state, action)
-	features['movingRight'] = movingRight(prev_state, state, action)
-	features['movingUp'] = movingUp(prev_state, state, action)
-	features['movingDown'] = movingDown(prev_state, state, action)
-	features['groundVertDistance'] = groundVertDistance(state)
-	features['roofVertDistance'] = roofVertDistance(state)
-	features['groundLeftDistance'] = groundLeftDistance(state)
-	features['groundRightDistance'] = groundRightDistance(state)
-	features['distLeftEnemy'] = distLeftEnemy(state)
-	features['distRightEnemy'] = distRightEnemy(state)
-	features['distUpEnemy'] = distUpEnemy(state)
-	features['distDownEnemy'] = distDownEnemy(state)
-	features['enemyOnScreen'] = enemyOnScreen(state)
-	features['groundBelow'] = groundBelow(state)
+	features['canMoveLeft'] = canMoveLeft(curr_state)
+	features['canMoveRight'] = canMoveRight(curr_state)
+	features['canMoveUp'] = canMoveUp(curr_state)
+	features['canMoveDown'] = canMoveDown(curr_state)
+	features['movingLeft'] = movingLeft(prev_state, curr_state)
+	features['movingRight'] = movingRight(prev_state, curr_state)
+	features['movingUp'] = movingUp(prev_state, curr_state)
+	features['movingDown'] = movingDown(prev_state, curr_state)
+	features['groundVertDistance'] = groundVertDistance(curr_state)
+	features['roofVertDistance'] = roofVertDistance(curr_state)
+	features['groundLeftDistance'] = groundLeftDistance(curr_state)
+	features['groundRightDistance'] = groundRightDistance(curr_state)
+	features['distLeftEnemy'] = distLeftEnemy(curr_state)
+	features['distRightEnemy'] = distRightEnemy(curr_state)
+	features['distUpEnemy'] = distUpEnemy(curr_state)
+	features['distDownEnemy'] = distDownEnemy(curr_state)
+	features['enemyOnScreen'] = enemyOnScreen(curr_state)
+	features['groundBelow'] = groundBelow(curr_state)
 
 	return features
 
@@ -45,9 +46,7 @@ def getFeatures(prev_state, state, action):
 # For functions in this file, use _marioPosition, since functions
 # should only be called if mario is on screen
 def marioPosition(state):
-	if not state.any():
-		if hp.DISPLAY_WARNINGS:
-			print "WARNING: state is null"
+	if state is None:
 		return None
 	rows, cols = np.nonzero(state == 3)
 	if rows.size == 0 or cols.size == 0:
@@ -61,7 +60,7 @@ def marioPosition(state):
 
 # Binary feature as to whether Mario is moving up
 # Only call if mario is currently on screen
-def movingUp(prev_state, curr_state, action_num):
+def movingUp(prev_state, curr_state):
 	prev_mpos = marioPosition(prev_state)
 	curr_mpos = marioPosition(curr_state)
 	assert curr_mpos is not None
@@ -77,7 +76,7 @@ def movingUp(prev_state, curr_state, action_num):
 
 # Binary feature as to whether Mario is moving down
 # Only call if mario is currently on screen
-def movingDown(prev_state, curr_state, action_num):
+def movingDown(prev_state, curr_state):
 	prev_mpos = marioPosition(prev_state)
 	curr_mpos = marioPosition(curr_state)
 	assert curr_mpos is not None
@@ -93,7 +92,7 @@ def movingDown(prev_state, curr_state, action_num):
 
 # Binary feature as to whether Mario is moving left
 # Only call if mario is currently on screen
-def movingLeft(prev_state, curr_state, action_num):
+def movingLeft(prev_state, curr_state):
 	prev_mpos = marioPosition(prev_state)
 	curr_mpos = marioPosition(curr_state)
 	assert curr_mpos is not None
@@ -109,7 +108,7 @@ def movingLeft(prev_state, curr_state, action_num):
 
 # Binary feature as to whether Mario is moving right
 # Only call if mario is currently on screen
-def movingRight(prev_state, curr_state, action_num):
+def movingRight(prev_state, curr_state):
 	prev_mpos = marioPosition(prev_state)
 	curr_mpos = marioPosition(curr_state)
 	assert curr_mpos is not None
@@ -118,7 +117,7 @@ def movingRight(prev_state, curr_state, action_num):
 	_, prev_col = prev_mpos
 	_, curr_col = curr_mpos
 
-	if curr_col > prev_col or (action_num in [7,8,9,10] and canMoveRight(prev_state)):
+	if curr_col > prev_col and canMoveRight(prev_state):
 		return 1.0
 	else:
 		return 0.0

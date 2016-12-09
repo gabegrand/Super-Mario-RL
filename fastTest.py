@@ -1,8 +1,8 @@
 # OpenAI Gym Framework and Super Mario Bros
 import gym
 # Only need to pull this once
-# import gym_pull
-# gym_pull.pull('github.com/ppaquette/gym-super-mario@gabegrand')
+#import gym_pull
+#gym_pull.pull('github.com/ppaquette/gym-super-mario@gabegrand')
 import ppaquette_gym_super_mario
 from ppaquette_gym_super_mario import wrappers
 
@@ -20,6 +20,8 @@ from qAgent import QLearningAgent
 from approxQAgent import ApproxQAgent
 from approxSarsaAgent import ApproxSarsaAgent
 
+import util
+
 print('-- Creating environment...')
 env = gym.make(hp.LEVEL)
 
@@ -36,12 +38,15 @@ env.reset()
 
 # Initialize the correct agent
 if hp.AGENT_TYPE == 0:
+    print "USING RANDOM AGENT"
+    raise NotImplementedError()
+elif hp.AGENT_TYPE == 1:
     agent = QLearningAgent()
     print "USING EXACT Q AGENT"
-elif hp.AGENT_TYPE == 1:
+elif hp.AGENT_TYPE == 2:
     agent = ApproxQAgent()
     print "USING APPROX Q AGENT"
-elif hp.AGENT_TYPE == 2:
+elif hp.AGENT_TYPE == 3:
     agent = ApproxSarsaAgent()
     print "USING APPROX SARSA AGENT"
 else:
@@ -79,37 +84,28 @@ while i <= hp.TRAINING_ITERATIONS:
     action = env.action_space.sample()
     state, reward, _, info = env.step(action)
 
-    # Choose action according to Q
-    action = agent.getAction(state)
+    if hp.AGENT_TYPE > 1:
+        state = util.State(state, None)
+
+    # Compute custom reward
+    reward = rewardFunction.getReward(reward, info)
 
     while not (info['iteration'] > i):
 
+        # Choose action according to Q
+        action = agent.getActionAndUpdate(state, reward)
+
         # Take action
-        nextState, orig_reward, dead, info = env.step(action)
+        nextState, reward, dead, info = env.step(action)
 
         # Compute custom reward
-        reward = rewardFunction.getReward(orig_reward, info)
+        reward = rewardFunction.getReward(reward, info)
 
-        # Only factored into update for Sarsa
-        nextAction = None
-        if hp.AGENT_TYPE == 2:
-            nextAction = agent.getAction(nextState)
-
-        # Update Q values; nextAction only used in Sarsa
-        agent.update({'state': state,
-                      'action': action,
-                      'nextState': nextState,
-                      'nextAction': nextAction,
-                      'reward': reward})
-
-        # Advance the state and action
-        state = nextState
-
-        # Choose next action according to Q. If SARSA, nextAction has already been chosen.
-        if hp.AGENT_TYPE == 2:
-            action = nextAction
+        # Advance the state
+        if hp.AGENT_TYPE > 1:
+            state.step(nextState)
         else:
-            action = agent.getAction(nextState)
+            state = nextState
 
     # Update diagnostics
     diagnostics[i] = {'states_learned': agent.numStatesLearned(),

@@ -4,39 +4,27 @@ import util
 
 class ApproxSarsaAgent(ApproxQAgent):
 
-    # only method that is different
-    # update_dict must consist of state, action, nextState, nextAction, reward
-    def update(self, update_dict):
+    def getActionAndUpdate(self, state, reward):
+        assert state
+        assert isinstance(state, util.State)
 
-        state = update_dict['state']
-        action = update_dict['action']
-        nextState = update_dict['nextState']
-        nextAction = update_dict['nextAction']
-        reward = update_dict['reward']
+        self.features = feat.getFeatures(state)
+        action = self.computeActionFromQValues(state)
 
-        self.N[str(state), action] += 1
+        # TODO can state ever be terminal?
+        if self.prev_s:
 
-        # Ensure Mario is on the screen in both states
-        # if ft.marioPosition(state) and ft.marioPosition(nextState):
-        if ft.marioPosition(nextState):
+            # Batch update weights
+            new_weights = util.Counter()
 
-            # Update features
-            features = ft.getFeatures(nextState, action)
-            self.features = features
-        else:
-            print "update: Mario not on screen"
+            q_val = self.getQValue(state, action)
+            for ft in self.features:
+                new_weights[ft] = self.weights[ft] + self.alpha * self.getN(self.prev_s.getCurr(), self.prev_a) * (reward + self.gamma * q_val - self.weights[ft])
+            self.weights = new_weights
 
-        # Update prev state
-        self.prev_state = state
+        self.prev_a = action
+        self.prev_s = state
+        self.prev_r = reward
 
-        # Compute value of nextState SARSA style
-        nextStateValue = self.getQValue(state, nextAction)
-
-        # Batch update weights
-        new_weights = util.Counter()
-
-        for feature in self.features:
-            new_weights[feature] = self.weights[feature] + self.alpha * ((reward + self.gamma * nextStateValue) - self.getQValue(state, action)) * self.features[feature]
-
-        self.weights = new_weights
-        print self.weights
+        self.incN(self.prev_s.getCurr(), self.prev_a)
+        return self.prev_a

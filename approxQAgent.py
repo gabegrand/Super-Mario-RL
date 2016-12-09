@@ -5,7 +5,7 @@ import numpy as np
 import pickle
 from datetime import datetime
 import hyperparameters as hp
-import features as ft
+import features as feat
 
 class ApproxQAgent(QLearningAgent):
 
@@ -16,51 +16,42 @@ class ApproxQAgent(QLearningAgent):
         self.gamma = hp.GAMMA
         self.actions = hp.MAPPING.keys()
         self.iter = 0
-        print self.actions
-
         self.features = util.Counter()
-        self.prev_state = np.array([])
+        self.prev_r = None
+        self.prev_a = None
+        self.prev_s = None
+
+    def getActionAndUpdate(self, state, reward):
+        assert state
+        assert isinstance(state, util.State)
+
+        # TODO can state ever be terminal?
+        if self.prev_s:
+            self.features = feat.getFeatures(state)
+
+            # Batch update weights
+            new_weights = util.Counter()
+
+            nextStateValue = self.computeValueFromQValues(state)
+            for ft in self.features:
+                new_weights[ft] = self.weights[ft] + self.alpha * self.getN(self.prev_s.getCurr(), self.prev_a) * (reward + self.gamma * nextStateValue - self.weights[ft])
+            self.weights = new_weights
+
+        self.prev_a = self.computeActionFromQValues(state)
+        self.prev_s = state
+        self.prev_r = reward
+
+        self.incN(self.prev_s.getCurr(), self.prev_a)
+        return self.prev_a
 
     def reset(self):
         self.features = util.Counter()
-        self.prev_state = np.array([])
-
-    def getWeights(self):
-        return self.weights
+        self.prev_s = None
+        self.prev_a = None
+        self.prev_r = None
 
     def getQValue(self, state, action):
-        return self.getWeights() * self.features
-
-    # update_dict should consist of 'state', 'action', 'nextState', and 'reward'
-    def update(self, update_dict):
-
-        state = update_dict['state']
-        action = update_dict['action']
-        nextState = update_dict['nextState']
-        reward = update_dict['reward']
-
-        # Update exploration function
-        self.N[str(state), action] += 1
-
-        # Ensure Mario is on the screen in both states
-        if ft.marioPosition(self.prev_state) and ft.marioPosition(state):
-
-            # Update features
-            self.features = ft.getFeatures(self.prev_state, state, action)
-
-        # Compute value of nextState
-        nextStateValue = self.computeValueFromQValues(nextState)
-
-        # Batch update weights
-        new_weights = util.Counter()
-
-        for feature in self.features:
-            new_weights[feature] = self.weights[feature] + self.alpha * ((reward + self.gamma * nextStateValue) - self.getQValue(state, action)) * self.features[feature]
-
-        self.weights = new_weights
-
-        # Update prev state
-        self.prev_state = state
+        return self.weights * self.features
 
     def numStatesLearned(self):
         return None

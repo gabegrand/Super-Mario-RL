@@ -1,6 +1,6 @@
 #!/bin/bash
 
-pyPID=$(ps ax | grep '[p]ython test.py' | awk '{print $1}')
+pyPID=$(ps ax | grep '[p]ython fastTest.py' | awk '{print $1}')
 fceuxPID=$(ps ax | grep '[/]usr/local/Cellar/fceux' | awk '{print $1}')
 if [[ ( "$pyPID"  =~ ^[0-9]+$ ) || ( "$fceuxPID"  =~ ^[0-9]+$ ) ]]
 then
