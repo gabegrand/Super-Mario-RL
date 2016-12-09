@@ -27,10 +27,11 @@ class ApproxQAgent(QLearningAgent):
 
         action_should_be_none = False
 
-        # TODO can state ever be terminal?
+        # Only update if prev_s exists (e.g., not first iteration of action loop)
         if self.prev_s:
             prev_q = self.getQ(self.prev_s, self.prev_a)
 
+            # Handle Mario death
             if feat.marioPosition(state.getCurr()) is None:
                 print('MODEL: Mario is dead. Returning action = None.')
                 action_should_be_none = True
@@ -38,27 +39,35 @@ class ApproxQAgent(QLearningAgent):
             else:
                 self.features = feat.getFeatures(state)
 
+            # Get value of state
+            nextStateValue = self.computeValueFromQValues(state)
+
             # Batch update weights
             new_weights = util.Counter()
-
-            nextStateValue = self.computeValueFromQValues(state)
             for ft in self.features:
                 new_weights[ft] = self.weights[ft] + self.alpha * self.getN(self.prev_s.getCurr(), self.prev_a) * (reward + self.gamma * nextStateValue - prev_q) * self.features[ft]
             self.weights = new_weights
+
+        # Even if prev_s doesn't exist, still compute features based on curr state
         elif feat.marioPosition(state.getCurr()) is not None:
             self.features = feat.getFeatures(state)
 
-
+        # If Mario is dead
         if action_should_be_none:
-            self.prev_a = None
+            action = None
+
+        # Otherwise, compute best action to take
         else:
-            self.prev_a = self.computeActionFromQValues(state)
+            action = self.computeActionFromQValues(state)
+
+        # Store state and reward for next iteration
+        self.prev_a = action
         self.prev_s = state
         self.prev_r = reward
 
+        # Increment exploration count
         self.incN(self.prev_s.getCurr(), self.prev_a)
 
-        print reward
         return self.prev_a
 
     def reset(self):
