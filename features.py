@@ -332,7 +332,7 @@ def canMoveUp(state):
 	m_row, m_col = _marioPosition(state)
 
 	if m_row > 0:
-		if state[m_row-1, m_col] == 0:
+		if state[m_row-1, m_col] in [0, 3]:
 			return 1.0
 		return 0.0
 	return 1.0
@@ -343,7 +343,7 @@ def canMoveDown(state):
 	m_row, m_col = _marioPosition(state)
 
 	if m_row < state.shape[0] - 1:
-		if state[m_row+1, m_col] == 0:
+		if state[m_row+1, m_col] in [0, 3]:
 			return 1.0
 		return 0.0
 	return 1.0
@@ -354,7 +354,7 @@ def canMoveRight(state):
 	m_row, m_col = _marioPosition(state)
 
 	if m_col < state.shape[1] - 1:
-		if state[m_row, m_col + 1] == 0:
+		if state[m_row, m_col + 1] in [0, 3]:
 			return 1.0
 		return 0.0
 	return 1.0
@@ -365,7 +365,7 @@ def canMoveLeft(state):
 	m_row, m_col = _marioPosition(state)
 
 	if m_col > 0:
-		if state[m_row, m_col - 1] == 0:
+		if state[m_row, m_col - 1] in [0, 3]:
 			return 1.0
 		return 0.0
 	return 0.0

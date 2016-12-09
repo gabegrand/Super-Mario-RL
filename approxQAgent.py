@@ -68,6 +68,8 @@ class ApproxQAgent(QLearningAgent):
         # Increment exploration count
         self.incN(self.prev_s.getCurr(), self.prev_a)
 
+        print self.features['canMoveRight']
+
         return self.prev_a
 
     def reset(self):

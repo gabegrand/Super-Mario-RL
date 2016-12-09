@@ -25,9 +25,9 @@ def testMarioPosition():
 def checkMovement(prev, curr, a_num, up, down, left, right):
 
 	u = movingUp(prev, curr, a_num)
-	d = movingDown(prev, curr, a_num) 
-	l = movingLeft(prev, curr, a_num) 
-	r = movingRight(prev, curr, a_num) 
+	d = movingDown(prev, curr, a_num)
+	l = movingLeft(prev, curr, a_num)
+	r = movingRight(prev, curr, a_num)
 
 	checkAnswerPairs([(u, up), (d, down), (l, left), (r, right)])
 
@@ -137,14 +137,14 @@ def test_bounds(state, left, right, above, below):
 def test_enemy_dists(state, dLeft, dRight, dUp, dDown):
 	l = distLeftEnemy(state)
 	dLeft = float(dLeft) / state.shape[1]
-	
+
 	r = distRightEnemy(state)
 	dRight = float(dRight) / state.shape[1]
-	
+
 
 	u = distUpEnemy(state)
 	dUp = float(dUp) / state.shape[0]
-	
+
 
 	d = distDownEnemy(state)
 	dDown = float(dDown) / state.shape[0]

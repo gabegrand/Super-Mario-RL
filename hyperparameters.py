@@ -24,7 +24,7 @@ GAMMA = 0.5     # Discount factor
 K = 10.0 # k value for exploration function, should be a float; set to 0 to ignore
 
 # Penalty for dying in reward function
-DEATH_PENALTY = 0
+DEATH_PENALTY = 10
 
 # Proportion of score increase added to reward (0 to 1)
 SCORE_FACTOR = 0.1
