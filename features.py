@@ -11,7 +11,7 @@ def getFeatures(state):
 	prev_state = state.getPrev()
 
 	# Get Mario's position
-	curr_mpos = util.marioPosition(curr_state)
+	curr_mpos = marioPosition(curr_state)
 
 	# Make sure Mario is currently on the screen
 	if not curr_mpos:

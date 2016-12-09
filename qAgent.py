@@ -21,15 +21,15 @@ class QLearningAgent:
         self.prev_s = None
 
     def getActionAndUpdate(self, state, reward):
-        assert state
+        assert state is not None
         assert isinstance(state, np.ndarray)
 
         # TODO can state ever be terminal?
-        if self.prev_s:
+        if self.prev_s is not None:
             nextStateValue = self.computeValueFromQValues(state)
             prev_q = self.getQ(self.prev_s, self.prev_a)
             self.setQ(str(self.prev_s), self.prev_a,
-                prev_q + self.alpha * self.N[self.prev_s, self.prev_a] * (reward + self.gamma * nextStateValue - prev_q))
+                prev_q + self.alpha * self.N[str(self.prev_s), self.prev_a] * (reward + self.gamma * nextStateValue - prev_q))
 
         self.prev_a = self.computeActionFromQValues(state)
         self.prev_s = state

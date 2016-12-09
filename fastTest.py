@@ -95,6 +95,10 @@ while i <= hp.TRAINING_ITERATIONS:
         # Choose action according to Q
         action = agent.getActionAndUpdate(state, reward)
 
+        # TODO I believe this will happen before he gets the death penalty, which is a problem
+        if action is None:
+            break
+
         # Take action
         nextState, reward, dead, info = env.step(action)
 
@@ -120,7 +124,8 @@ while i <= hp.TRAINING_ITERATIONS:
         print('Saving Q values...')
         agent.save(i, j, diagnostics[i])
 
-    print agent.getWeights()
+    if hp.AGENT_TYPE > 1:
+        print agent.getWeights()
 
     # Go to next iteration
     print('Iteration %d / %d complete.' % (i + j, hp.TRAINING_ITERATIONS + j))

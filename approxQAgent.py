@@ -25,10 +25,16 @@ class ApproxQAgent(QLearningAgent):
         assert state
         assert isinstance(state, util.State)
 
+        action_should_be_none = False
+
         # TODO can state ever be terminal?
         if self.prev_s:
             prev_q = self.getQ(self.prev_s, self.prev_a)
-            self.features = feat.getFeatures(state)
+
+            if feat.marioPosition(state.getCurr()) is None:
+                action_should_be_none = True
+            else:    
+                self.features = feat.getFeatures(state)
 
             # Batch update weights
             new_weights = util.Counter()
@@ -37,10 +43,14 @@ class ApproxQAgent(QLearningAgent):
             for ft in self.features:
                 new_weights[ft] = self.weights[ft] + self.alpha * self.getN(self.prev_s.getCurr(), self.prev_a) * (reward + self.gamma * nextStateValue - prev_q) * self.features[ft]
             self.weights = new_weights
-        else:
+        elif feat.marioPosition(state.getCurr()) is not None:
             self.features = feat.getFeatures(state)
 
-        self.prev_a = self.computeActionFromQValues(state)
+
+        if action_should_be_none:
+            self.prev_a = None
+        else:
+            self.prev_a = self.computeActionFromQValues(state)
         self.prev_s = state
         self.prev_r = reward
 
@@ -58,6 +68,9 @@ class ApproxQAgent(QLearningAgent):
 
     def numStatesLearned(self):
         return None
+
+    def getWeights(self):
+        return self.weights
 
     def save(self, i, j, diagnostics):
 

@@ -1,5 +1,5 @@
 from approxQAgent import ApproxQAgent
-import features as ft
+import features as feat
 import util
 
 class ApproxSarsaAgent(ApproxQAgent):
@@ -8,12 +8,16 @@ class ApproxSarsaAgent(ApproxQAgent):
         assert state
         assert isinstance(state, util.State)
 
-        action = self.computeActionFromQValues(state)
+        if feat.marioPosition(state.getCurr()) is None:
+            action = None
+        else:
+            action = self.computeActionFromQValues(state)
 
         # TODO can state ever be terminal?
         if self.prev_s:
             prev_q = self.getQ(self.prev_s, self.prev_a)
-            self.features = feat.getFeatures(state)
+            if action is not None:
+                self.features = feat.getFeatures(state)
 
             # Batch update weights
             new_weights = util.Counter()
@@ -22,7 +26,7 @@ class ApproxSarsaAgent(ApproxQAgent):
             for ft in self.features:
                 new_weights[ft] = self.weights[ft] + self.alpha * self.getN(self.prev_s.getCurr(), self.prev_a) * (reward + self.gamma * q_val - prev_q) * self.features[ft]
             self.weights = new_weights
-        else:
+        elif action is not None:
             self.features = feat.getFeatures(state)
 
         self.prev_a = action
