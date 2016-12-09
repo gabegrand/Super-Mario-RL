@@ -21,9 +21,11 @@ import numpy as np
 # Represents state in the approximate Q and SARSA algs
 # Previous state is tracked for veclity feature purposes
 class State:
-    def __init__(self, curr, prev):
+    def __init__(self, curr, prev, currDist, prevDist):
         self.setCurr(curr)
         self.setPrev(prev)
+        self.currDist = currDist
+        self.prevDist = prevDist
 
     def getCurr(self):
         return self.curr
@@ -39,9 +41,11 @@ class State:
         assert prev is None or isinstance(prev, np.ndarray)
         self.prev = prev
 
-    def step(self, newState):
+    def step(self, newState, newDist):
         self.setPrev(self.getCurr())
         self.setCurr(newState)
+        self.prevDist = self.currDist
+        self.currDist = newDist
 
 class FixedRandom:
     def __init__(self):

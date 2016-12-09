@@ -29,6 +29,10 @@ class ApproxQAgent(QLearningAgent):
 
         # Only update if prev_s exists (e.g., not first iteration of action loop)
         if self.prev_s:
+
+            # print state.prevDist, state.currDist
+
+            # Get Q value of previous state
             prev_q = self.getQ(self.prev_s, self.prev_a)
 
             # Handle Mario death
@@ -68,7 +72,7 @@ class ApproxQAgent(QLearningAgent):
         # Increment exploration count
         self.incN(self.prev_s.getCurr(), self.prev_a)
 
-        print self.features['canMoveRight']
+        print self.features['horzVelocity']
 
         return self.prev_a
 

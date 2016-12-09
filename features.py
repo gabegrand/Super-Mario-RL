@@ -10,6 +10,9 @@ def getFeatures(state):
 	curr_state = state.getCurr()
 	prev_state = state.getPrev()
 
+	curr_dist = state.currDist
+	prev_dist = state.prevDist
+
 	# Get Mario's position
 	curr_mpos = marioPosition(curr_state)
 
@@ -23,8 +26,9 @@ def getFeatures(state):
 	features['canMoveRight'] = canMoveRight(curr_state)
 	features['canMoveUp'] = canMoveUp(curr_state)
 	features['canMoveDown'] = canMoveDown(curr_state)
-	features['movingLeft'] = movingLeft(prev_state, curr_state)
-	features['movingRight'] = movingRight(prev_state, curr_state)
+
+	features['horzVelocity'] = horzVelocity(prev_dist, curr_dist)
+
 	features['movingUp'] = movingUp(prev_state, curr_state)
 	features['movingDown'] = movingDown(prev_state, curr_state)
 	features['groundVertDistance'] = groundVertDistance(curr_state)
@@ -90,38 +94,13 @@ def movingDown(prev_state, curr_state):
 	else:
 		return 0.0
 
-# Binary feature as to whether Mario is moving left
-# Only call if mario is currently on screen
-def movingLeft(prev_state, curr_state):
-	prev_mpos = marioPosition(prev_state)
-	curr_mpos = marioPosition(curr_state)
-	assert curr_mpos is not None
-	if prev_mpos is None:
-		return 0.0
-	_, prev_col = prev_mpos
-	_, curr_col = curr_mpos
-
-	if curr_col < prev_col:
-		return 1.0
+# Mario's velocity on the x axis.
+# Scaled to [0, 1], since max velocity is 8.0
+def horzVelocity(prev_dist, curr_dist):
+	if prev_dist and curr_dist:
+		return float(curr_dist - prev_dist) / 8.0
 	else:
 		return 0.0
-
-# Binary feature as to whether Mario is moving right
-# Only call if mario is currently on screen
-def movingRight(prev_state, curr_state):
-	prev_mpos = marioPosition(prev_state)
-	curr_mpos = marioPosition(curr_state)
-	assert curr_mpos is not None
-	if prev_mpos is None:
-		return 0.0
-	_, prev_col = prev_mpos
-	_, curr_col = curr_mpos
-
-	if curr_col > prev_col and canMoveRight(prev_state):
-		return 1.0
-	else:
-		return 0.0
-
 
 # Returns the number of rows between Mario and the roof (0 if next level is roof)
 # if no roof above Mario, return number of rows between Mario and offscreen

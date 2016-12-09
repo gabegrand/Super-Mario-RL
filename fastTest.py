@@ -84,7 +84,7 @@ while i <= hp.TRAINING_ITERATIONS:
     state, reward, _, info = env.step(action)
 
     if hp.AGENT_TYPE > 1:
-        state = util.State(state, None)
+        state = util.State(state, None, info['distance'], None)
 
     # Compute custom reward
     reward = rewardFunction.getReward(reward, info)
@@ -116,7 +116,7 @@ while i <= hp.TRAINING_ITERATIONS:
 
             # Advance the state
             if hp.AGENT_TYPE > 1:
-                state.step(nextState)
+                state.step(nextState, info['distance'])
             else:
                 state = nextState
 
