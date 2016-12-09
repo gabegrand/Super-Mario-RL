@@ -12,13 +12,13 @@ class ApproxSarsaAgent(ApproxQAgent):
 
         # TODO can state ever be terminal?
         if self.prev_s:
-            prev_q = self.getQValue(self.prev_s, self.prev_a)
+            prev_q = self.getQ(self.prev_s, self.prev_a)
             self.features = feat.getFeatures(state)
 
             # Batch update weights
             new_weights = util.Counter()
 
-            q_val = self.getQValue(state, action)
+            q_val = self.getQ(state, action)
             for ft in self.features:
                 new_weights[ft] = self.weights[ft] + self.alpha * self.getN(self.prev_s.getCurr(), self.prev_a) * (reward + self.gamma * q_val - prev_q) * self.features[ft]
             self.weights = new_weights

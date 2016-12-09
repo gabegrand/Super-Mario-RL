@@ -27,7 +27,7 @@ class ApproxQAgent(QLearningAgent):
 
         # TODO can state ever be terminal?
         if self.prev_s:
-            prev_q = self.getQValue(self.prev_s, self.prev_a)
+            prev_q = self.getQ(self.prev_s, self.prev_a)
             self.features = feat.getFeatures(state)
 
             # Batch update weights
@@ -53,7 +53,7 @@ class ApproxQAgent(QLearningAgent):
         self.prev_a = None
         self.prev_r = None
 
-    def getQValue(self, state, action):
+    def getQ(self, state, action):
         return self.weights * self.features
 
     def numStatesLearned(self):
