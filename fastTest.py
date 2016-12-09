@@ -90,26 +90,39 @@ while i <= hp.TRAINING_ITERATIONS:
     # Compute custom reward
     reward = rewardFunction.getReward(reward, info)
 
+    dead = False
+
     while not (info['iteration'] > i):
 
-        # Choose action according to Q
-        action = agent.getActionAndUpdate(state, reward)
-
-        # TODO I believe this will happen before he gets the death penalty, which is a problem
-        if action is None:
-            break
-
-        # Take action
-        nextState, reward, dead, info = env.step(action)
-
-        # Compute custom reward
-        reward = rewardFunction.getReward(reward, info)
-
-        # Advance the state
-        if hp.AGENT_TYPE > 1:
-            state.step(nextState)
+        if dead: 
+            # Take NOOP action til environment ready to reset
+            _, _, ready, _ = env.step(0)
+            if ready:
+                break
         else:
-            state = nextState
+            # Choose action according to Q
+            action = agent.getActionAndUpdate(state, reward)
+
+            # Once offscreen, he's dead, but environment has delay
+            if action is None:
+                dead = True
+                continue
+
+            # Take action
+            nextState, reward, died, info = env.step(action)
+
+            # this should never happen, since our action registers death before they do, but just in case
+            if died:
+                break
+
+            # Compute custom reward
+            reward = rewardFunction.getReward(reward, info)
+
+            # Advance the state
+            if hp.AGENT_TYPE > 1:
+                state.step(nextState)
+            else:
+                state = nextState
 
     # Update diagnostics
     diagnostics[i] = {'states_learned': agent.numStatesLearned(),
