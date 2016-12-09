@@ -12,18 +12,19 @@ class rewardModel:
 
     def getReward(self, reward, info):
 
-        # Encourage Mario to go right
-        if reward > 0:
-            reward *= 10
-        # Penalize Mario for standing still
-        else:
-            reward -= 1
-            reward *= 10
+        # # Encourage Mario to go right
+        # if reward > 0:
+        #     reward *= 10
+        # # Penalize Mario for standing still
+        # else:
+        #     reward -= 1
+        #     reward *= 10
 
+        """ This functionality has been moved to getActionAndUpdate"""
         # If Mario dies, punish
-        if 'life' in info.keys() and info['life'] == 0:
-            print("Oh no! Mario died!")
-            reward -= hp.DEATH_PENALTY
+        # if 'life' in info.keys() and info['life'] == 0:
+        #     print("Oh no! Mario died!")
+        #     reward -= hp.DEATH_PENALTY
 
         # If Mario's score increases, reward
         if 'score' in info.keys() and int(info['score']) > self.curr_score:

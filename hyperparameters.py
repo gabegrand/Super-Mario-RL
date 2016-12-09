@@ -17,17 +17,17 @@ SAVE_EVERY = 10
 AGENT_TYPE = 2
 
 # Q Learning Agent Parameters
-ALPHA = 0.2     # Learning rate
+ALPHA = 0.01     # Learning rate
 MIN_EPSILON = 0.001   # Random move probability
 GAMMA = 0.5     # Discount factor
 
 K = 10.0 # k value for exploration function, should be a float; set to 0 to ignore
 
 # Penalty for dying in reward function
-DEATH_PENALTY = 100
+DEATH_PENALTY = 0
 
 # Proportion of score increase added to reward (0 to 1)
-SCORE_FACTOR = 1
+SCORE_FACTOR = 0.1
 
 # How many timesteps to repeat an action
 ACTION_DURATION = 4

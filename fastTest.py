@@ -14,15 +14,14 @@ import numpy as np
 import hyperparameters as hp
 import features as ft
 from rewardModel import rewardModel
+import util
 
 # Agents
 from qAgent import QLearningAgent
 from approxQAgent import ApproxQAgent
 from approxSarsaAgent import ApproxSarsaAgent
 
-import util
-
-print('-- Creating environment...')
+print('-- Creating environment')
 env = gym.make(hp.LEVEL)
 
 print('-- Acquiring multiprocessing lock')
@@ -42,15 +41,14 @@ if hp.AGENT_TYPE == 0:
     raise NotImplementedError()
 elif hp.AGENT_TYPE == 1:
     agent = QLearningAgent()
-    print "USING EXACT Q AGENT"
 elif hp.AGENT_TYPE == 2:
     agent = ApproxQAgent()
-    print "USING APPROX Q AGENT"
 elif hp.AGENT_TYPE == 3:
     agent = ApproxSarsaAgent()
-    print "USING APPROX SARSA AGENT"
 else:
     raise ValueError("Invalid AGENT_TYPE in hyperparameters")
+
+print("-- Using %s" % agent.__class__.__name__)
 
 # Load from previous saved Q values
 if hp.LOAD_FROM is not None:
@@ -70,6 +68,7 @@ diagnostics = {}
 
 i = 1
 
+# Begin training loop
 while i <= hp.TRAINING_ITERATIONS:
 
     print('-- Resetting agent')
@@ -92,9 +91,10 @@ while i <= hp.TRAINING_ITERATIONS:
 
     dead = False
 
+    # Begin main action-perception loop
     while not (info['iteration'] > i):
 
-        if dead: 
+        if dead:
             # Take NOOP action til environment ready to reset
             _, _, ready, _ = env.step(0)
             if ready:
@@ -103,17 +103,13 @@ while i <= hp.TRAINING_ITERATIONS:
             # Choose action according to Q
             action = agent.getActionAndUpdate(state, reward)
 
-            # Once offscreen, he's dead, but environment has delay
+            # If Mario is off the screen, assume he is dead
             if action is None:
                 dead = True
                 continue
 
             # Take action
-            nextState, reward, died, info = env.step(action)
-
-            # this should never happen, since our action registers death before they do, but just in case
-            if died:
-                break
+            nextState, reward, _, info = env.step(action)
 
             # Compute custom reward
             reward = rewardFunction.getReward(reward, info)
@@ -130,7 +126,7 @@ while i <= hp.TRAINING_ITERATIONS:
                       'score': info['score']}
 
     print(info)
-    print(diagnostics[i])
+    # print(diagnostics[i])
 
     # Save Q-values
     if i % hp.SAVE_EVERY == 0:

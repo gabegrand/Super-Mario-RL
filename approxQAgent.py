@@ -32,8 +32,10 @@ class ApproxQAgent(QLearningAgent):
             prev_q = self.getQ(self.prev_s, self.prev_a)
 
             if feat.marioPosition(state.getCurr()) is None:
+                print('MODEL: Mario is dead. Returning action = None.')
                 action_should_be_none = True
-            else:    
+                reward -= hp.DEATH_PENALTY
+            else:
                 self.features = feat.getFeatures(state)
 
             # Batch update weights
@@ -55,6 +57,8 @@ class ApproxQAgent(QLearningAgent):
         self.prev_r = reward
 
         self.incN(self.prev_s.getCurr(), self.prev_a)
+
+        print reward
         return self.prev_a
 
     def reset(self):
