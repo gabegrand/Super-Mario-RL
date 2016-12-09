@@ -37,6 +37,8 @@ class ApproxQAgent(QLearningAgent):
             for ft in self.features:
                 new_weights[ft] = self.weights[ft] + self.alpha * self.getN(self.prev_s.getCurr(), self.prev_a) * (reward + self.gamma * nextStateValue - prev_q) * self.features[ft]
             self.weights = new_weights
+        else:
+            self.features = feat.getFeatures(state)
 
         self.prev_a = self.computeActionFromQValues(state)
         self.prev_s = state
