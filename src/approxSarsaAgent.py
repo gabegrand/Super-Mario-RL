@@ -1,48 +1,38 @@
-from approxQAgent import ApproxQAgent
-import features as feat
-import util
-import hyperparameters as hp
+from approxQAgent import *
 
 class ApproxSarsaAgent(ApproxQAgent):
 
-    def getActionAndUpdate(self, state, reward):
-        assert state
-        assert isinstance(state, util.State)
+    def getActionAndUpdate(self, s_prime, r_prime):
+        assert s_prime
+        assert isinstance(s_prime, util.s_prime)
 
         action = None
 
         # Terminal case
-        if feat.marioPosition(state.getCurr()) is None:
+        if feat.marioPosition(s_prime.getCurr()) is None:
             print('MODEL: Mario is dead. Returning action = None.')
-            reward -= hp.DEATH_PENALTY
-
-            # Batch update weights
-            new_weights = util.Counter()
-            for ft in self.features:
-                new_weights[ft] = self.weights[ft] + self.alpha * reward * self.features[ft]
-            self.weights = new_weights
-        # Only update if prev_s exists (e.g., not first iteration of action loop)
-        elif self.prev_s:
-            action = self.computeActionFromQValues(state)
-
-            prev_q = self.getQ(self.prev_s, self.prev_a)
-            self.features = feat.getFeatures(state)
-
-            # Batch update weights
-            new_weights = util.Counter()
-
-            q_val = self.getQ(state, action)
-            for ft in self.features:
-                new_weights[ft] = self.weights[ft] + self.alpha * (reward + self.gamma * q_val - prev_q) * self.features[ft]
-            self.weights = new_weights
-        #First iteration
+            r_prime -= hp.DEATH_PENALTY
+            q_prime = r_prime
         else:
-            action = self.computeActionFromQValues(state)
-            self.features = feat.getFeatures(state)
+            action = self.computeActionFromQValues(s_prime)
+            q_prime = self.getQ(s_prime, action)
 
-        self.prev_a = action
-        self.prev_s = state
-        self.prev_r = reward
+        # Only update if prev_s exists (e.g., not first iteration of action loop)
+        if self.prev_s:
 
-        self.incN(self.prev_s.getCurr(), self.prev_a)
-        return self.prev_a
+            self.incN(state, action)
+
+            q = self.getQ(self.prev_s, self.prev_a)
+
+            # Batch update weights
+            new_weights = util.Counter()
+            features = feat.getFeatures(self.s, self.a)
+            for ft in self.prev_feat:
+                new_weights[ft] = self.weights[ft] + self.alpha * (self.r + self.gamma * q_prime - q) * features[ft]
+            self.weights = new_weights
+
+        self.a = action
+        self.s = s_prime
+        self.r = r_prime
+
+        return self.a

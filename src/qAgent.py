@@ -1,12 +1,6 @@
-import util
-import random
-import numpy as np
-import pickle
-from datetime import datetime
-import hyperparameters as hp
-import features as feat
+from abstractAgent import *
 
-class QLearningAgent:
+class QLearningAgent(AbstractAgent):
 
     def __init__(self):
         self.Q = util.Counter()
@@ -16,40 +10,58 @@ class QLearningAgent:
         self.gamma = hp.GAMMA
         self.actions = hp.MAPPING.keys()
 
-        self.prev_r = None
-        self.prev_a = None
-        self.prev_s = None
+        self.r = None
+        self.a = None
+        self.s = None
 
-    def getActionAndUpdate(self, state, reward):
-        assert state is not None
-        assert isinstance(state, np.ndarray)
+    def getActionAndUpdate(self, s_prime, r_prime):
+        assert s_prime
+        assert isinstance(s_prime, util.State)
 
         action_should_be_none = False
 
         # Terminal case
-        if feat.marioPosition(state) is None:
-            self.setQ(state, None, reward)
+        if feat.marioPosition(s_prime.getCurr()) is None:
+            print('MODEL: Mario is dead. Returning action = None.')
+            r_prime -= hp.DEATH_PENALTY
             action_should_be_none = True
+            self.setQ(s_prime, None, r_prime)
 
-        elif self.prev_s is not None:
-            nextStateValue = self.computeValueFromQValues(state)
-            prev_q = self.getQ(self.prev_s, self.prev_a)
-            self.setQ(str(self.prev_s), self.prev_a, prev_q + self.alpha * (reward + self.gamma * nextStateValue - prev_q))
-            
+        # Only update if s exists (e.g., not first iteration of action loop)
+        if self.s:
+
+            self.incN(self.s, self.a)
+
+            # Get Q value of previous state
+            q = self.getQ(self.s, self.a)
+
+            if action_should_be_none:
+                q_prime = r_prime
+            else:
+                # Get value of s_prime
+                q_prime = self.computeValueFromQValues(s_prime)
+
+            self.setQ(self.s, self.a, q + self.alpha * (reward + self.gamma * q_prime - q))
+
+        # UPDATE STATE, ACTION, REWARD
+
+        # If Mario is dead
         if action_should_be_none:
-            self.prev_a = None
+            self.a = None
+        # Otherwise, compute best action to take
         else:
-            self.prev_a = self.computeActionFromQValues(state)
-        self.prev_s = state
-        self.prev_r = reward
+            self.a = self.computeActionFromQValues(s_prime)
 
-        self.incN(self.prev_s, self.prev_a)
-        return self.prev_a
+        # Store state and reward for next iteration
+        self.s = s_prime
+        self.r = r_prime
+
+        return self.a
 
     def reset(self):
-        self.prev_s = None
-        self.prev_a = None
-        self.prev_r = None
+        self.s = None
+        self.a = None
+        self.r = None
 
     def getN(self, state, action):
         return self.N[str(state), action]
@@ -58,10 +70,7 @@ class QLearningAgent:
         self.N[str(state), action] += 1
 
     def getQ(self, state, action):
-        if hasattr(self, 'Q'):
-            return self.Q[str(state), action]
-        else:
-            return self.weights * self.features
+        return self.Q[str(state), action]
 
     def setQ(self, state, action, q_val):
         self.Q[str(state), action] = q_val

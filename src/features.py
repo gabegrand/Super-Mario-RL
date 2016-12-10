@@ -3,7 +3,7 @@ import numpy as np
 import sys
 import util
 
-# Returns a vector (actually a util.Counter object) of features
+# Returns a vector of features as a util.Counter() object
 def getFeatures(state, action):
 	assert isinstance(state, util.State)
 
