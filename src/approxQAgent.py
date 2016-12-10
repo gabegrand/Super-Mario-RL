@@ -91,10 +91,8 @@ class ApproxQAgent(AbstractAgent):
 
         if util.flipCoin(max(hp.MIN_EPSILON, hp.EP_DEC / (hp.EP_DEC + self.iter))):
             self.iter += 1
+            print "Taking random action...", random.random()
             return np.random.choice(self.actions, 1, p=hp.PRIOR)[0]
-        """
-          Compute the best action to take in a state.
-        """
 
         # Keep track of values of each action
         action_values = []
