@@ -15,10 +15,10 @@ class ApproxQAgent(AbstractAgent):
         self.s = None
 
     def getN(self, state, action):
-        return self.N[str(state.getCurr()), action]
+        return self.N[str(state.getTiles()), action]
 
     def incN(self, state, action):
-        self.N[str(state.getCurr()), action] += 1
+        self.N[str(state.getTiles()), action] += 1
 
     def getActionAndUpdate(self, s_prime, r_prime):
         assert s_prime
@@ -27,7 +27,7 @@ class ApproxQAgent(AbstractAgent):
         action_should_be_none = False
 
         # Terminal case
-        if feat.marioPosition(s_prime.getCurr()) is None:
+        if feat.marioPosition(s_prime.getTiles()) is None:
             print('MODEL: Mario is dead. Returning action = None.')
             action_should_be_none = True
             r_prime -= hp.DEATH_PENALTY
@@ -62,7 +62,7 @@ class ApproxQAgent(AbstractAgent):
             self.a = self.computeActionFromQValues(s_prime)
 
         # Store state and reward for next iteration
-        self.s = s_prime
+        self.s = s_prime.copy()
         self.r = r_prime
 
         return self.a

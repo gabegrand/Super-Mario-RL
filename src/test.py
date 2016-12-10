@@ -92,7 +92,7 @@ try:
             state, reward, _, info = env.step(action)
 
         if hp.AGENT_TYPE > 1:
-            state = util.State(state, None, info['distance'], None)
+            state = util.State(state, info['distance'], None)
 
         # Compute custom reward
         reward = rewardFunction.getReward(reward, info)

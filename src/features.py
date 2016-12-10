@@ -7,8 +7,7 @@ import util
 def getFeatures(state, action):
 	assert isinstance(state, util.State)
 
-	curr_state = state.getCurr()
-	prev_state = state.getPrev()
+	curr_state = state.getTiles()
 
 	curr_dist = state.currDist
 	prev_dist = state.prevDist

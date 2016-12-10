@@ -17,35 +17,30 @@ import inspect
 import heapq, random
 import cStringIO
 import numpy as np
+import copy
 
 # Represents state in the approximate Q and SARSA algs
 # Previous state is tracked for veclity feature purposes
 class State:
-    def __init__(self, curr, prev, currDist, prevDist):
-        self.setCurr(curr)
-        self.setPrev(prev)
+    def __init__(self, tiles, currDist, prevDist):
+        self.setTiles(tiles)
         self.currDist = currDist
         self.prevDist = prevDist
 
-    def getCurr(self):
-        return self.curr
+    def getTiles(self):
+        return self.tiles
 
-    def getPrev(self):
-        return self.prev
+    def setTiles(self, tiles):
+        assert isinstance(tiles, np.ndarray)
+        self.tiles = tiles
 
-    def setCurr(self, curr):
-        assert isinstance(curr, np.ndarray)
-        self.curr = curr
-
-    def setPrev(self, prev):
-        assert prev is None or isinstance(prev, np.ndarray)
-        self.prev = prev
-
-    def step(self, newState, newDist):
-        self.setPrev(self.getCurr())
-        self.setCurr(newState)
+    def step(self, tiles, newDist):
+        self.setTiles(tiles)
         self.prevDist = self.currDist
         self.currDist = newDist
+
+    def copy(self):
+        return State(np.copy(self.tiles), self.currDist, self.prevDist)
 
 class FixedRandom:
     def __init__(self):
