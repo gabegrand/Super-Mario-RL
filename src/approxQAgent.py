@@ -46,7 +46,7 @@ class ApproxQAgent(QLearningAgent):
             prev_q = self.getQ(self.prev_s, self.prev_a)
 
             # Update features
-            self.features = feat.getFeatures(state)
+            self.features = feat.getFeatures(state, self.prev_a)
 
             # Get value of state
             nextStateValue = self.computeValueFromQValues(state)
@@ -57,8 +57,8 @@ class ApproxQAgent(QLearningAgent):
                 new_weights[ft] = self.weights[ft] + self.alpha * (reward + self.gamma * nextStateValue - prev_q) * self.features[ft]
             self.weights = new_weights
         #First iteration
-        else:    
-            self.features = feat.getFeatures(state)
+        else:
+            self.features = feat.getFeatures(state, self.prev_a)
 
         # If Mario is dead
         if action_should_be_none:
@@ -72,6 +72,8 @@ class ApproxQAgent(QLearningAgent):
 
         # Increment exploration count
         self.incN(self.prev_s.getCurr(), self.prev_a)
+
+        # print feat.enemyDangerRight(state.getCurr())
 
         return self.prev_a
 
