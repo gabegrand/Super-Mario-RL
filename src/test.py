@@ -160,4 +160,5 @@ try:
 except KeyboardInterrupt:
     # environment wasn't dying, so kill it
     subprocess.call(['./kill-mario.sh'])
+    print ""
     os._exit(0)

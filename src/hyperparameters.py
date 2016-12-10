@@ -5,7 +5,7 @@ DISPLAY_WARNINGS = False
 WORLD = '1-3'
 LEVEL = 'ppaquette/SuperMarioBros-' + WORLD + '-Tiles-v0'
 
-TRAINING_ITERATIONS = 1
+TRAINING_ITERATIONS = 10
 
 # Whether to load from existing Q values file
 LOAD_FROM = None
@@ -18,7 +18,7 @@ AGENT_TYPE = 2
 
 # Q Learning Agent Parameters
 ALPHA = 0.1     # Learning rate
-MIN_EPSILON = 0.001   # Random move probability
+MIN_EPSILON = 0.01   # Random move probability
 GAMMA = 0.5     # Discount factor
 
 K = 10.0 # k value for exploration function, should be a float; set to 0 to ignore
@@ -63,8 +63,8 @@ PRIOR = [
     1/NORM,    #5
     1/NORM,    #6
     5/NORM,    #7
-    5/NORM,    #8
-    20/NORM,    #9
+    20/NORM,    #8
+    5/NORM,    #9
     10/NORM,    #10
     1/NORM,    #11
     1/NORM,    #12

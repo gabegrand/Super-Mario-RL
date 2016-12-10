@@ -81,7 +81,7 @@ class QLearningAgent:
 
     def computeActionFromQValues(self, state):
 
-        if util.flipCoin(max(hp.MIN_EPSILON, 5.0 / (5.0 + self.iter))):
+        if util.flipCoin(max(hp.MIN_EPSILON, 500.0 / (500.0 + self.iter))):
             self.iter += 1
             return np.random.choice(self.actions, 1, p=hp.PRIOR)[0]
         """

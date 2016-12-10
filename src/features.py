@@ -27,7 +27,8 @@ def getFeatures(state):
 	features['canMoveUp'] = canMoveUp(curr_state)
 	features['canMoveDown'] = canMoveDown(curr_state)
 
-	features['horzVelocity'] = horzVelocity(prev_dist, curr_dist)
+	features['rightVelocity'] = rightVelocity(prev_dist, curr_dist)
+	features['leftVelocity'] = leftVelocity(prev_dist, curr_dist)
 
 	# features['movingUp'] = movingUp(prev_state, curr_state)
 	# features['movingDown'] = movingDown(prev_state, curr_state)
@@ -96,9 +97,17 @@ def movingDown(prev_state, curr_state):
 
 # Mario's velocity on the x axis.
 # Scaled to [0, 1], since max velocity is 8.0
-def horzVelocity(prev_dist, curr_dist):
+def rightVelocity(prev_dist, curr_dist):
 	if prev_dist and curr_dist:
-		return float(curr_dist - prev_dist) / 8.0
+		return max(float(curr_dist - prev_dist) / 8.0, 0.0)
+	else:
+		return 0.0
+
+# Mario's velocity on the x axis.
+# Scaled to [0, 1], since max velocity is 8.0
+def leftVelocity(prev_dist, curr_dist):
+	if prev_dist and curr_dist:
+		return max(float(prev_dist - curr_dist) / 8.0, 0.0)
 	else:
 		return 0.0
 
