@@ -128,10 +128,17 @@ try:
                 else:
                     state = nextState
 
-        # Update diagnostics
-        diagnostics[i] = {'states_learned': agent.numStatesLearned(),
-                          'distance': info['distance'],
-                          'score': info['score']}
+        # Handles ApproxSARSA too, since child of ApproxQ
+        if isinstance(agent, ApproxQAgent):
+            print agent.getWeights()
+            # Update diagnostics
+            diagnostics[i] = {'distance': info['distance'],
+                              'score': info['score']}
+        else:
+            # Update diagnostics
+            diagnostics[i] = {'states_learned': agent.numStatesLearned(),
+                              'distance': info['distance'],
+                              'score': info['score']}
 
         print(info)
         # print(diagnostics[i])
@@ -140,9 +147,6 @@ try:
         if i % hp.SAVE_EVERY == 0:
             print('Saving Q values...')
             agent.save(i, j, diagnostics[i])
-
-        if hp.AGENT_TYPE > 1:
-            print agent.getWeights()
 
         # Go to next iteration
         print('Iteration %d / %d complete.' % (i + j, hp.TRAINING_ITERATIONS + j))

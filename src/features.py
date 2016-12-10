@@ -4,7 +4,7 @@ import sys
 import util
 
 # Returns a vector (actually a util.Counter object) of features
-def getFeatures(state):
+def getFeatures(state, action):
 	assert isinstance(state, util.State)
 
 	curr_state = state.getCurr()
