@@ -20,6 +20,7 @@ import util
 from qAgent import QLearningAgent
 from approxQAgent import ApproxQAgent
 from approxSarsaAgent import ApproxSarsaAgent
+from randomAgent import RandomAgent
 
 print('-- Creating environment')
 env = gym.make(hp.LEVEL)
@@ -37,8 +38,7 @@ env.reset()
 
 # Initialize the correct agent
 if hp.AGENT_TYPE == 0:
-    print "USING RANDOM AGENT"
-    raise NotImplementedError()
+    agent = RandomAgent()
 elif hp.AGENT_TYPE == 1:
     agent = QLearningAgent()
 elif hp.AGENT_TYPE == 2:
