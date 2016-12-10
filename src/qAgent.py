@@ -34,8 +34,7 @@ class QLearningAgent:
         elif self.prev_s is not None:
             nextStateValue = self.computeValueFromQValues(state)
             prev_q = self.getQ(self.prev_s, self.prev_a)
-            self.setQ(str(self.prev_s), self.prev_a,
-                prev_q + self.alpha * self.N[str(self.prev_s), self.prev_a] * (reward + self.gamma * nextStateValue - prev_q))
+            self.setQ(str(self.prev_s), self.prev_a, prev_q + self.alpha * (reward + self.gamma * nextStateValue - prev_q))
             
         if action_should_be_none:
             self.prev_a = None

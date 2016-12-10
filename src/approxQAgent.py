@@ -36,7 +36,7 @@ class ApproxQAgent(QLearningAgent):
             # Batch update weights
             new_weights = util.Counter()
             for ft in self.features:
-                new_weights[ft] = self.weights[ft] + self.alpha * self.getN(self.prev_s.getCurr(), self.prev_a) * reward * self.features[ft]
+                new_weights[ft] = self.weights[ft] + self.alpha * reward * self.features[ft]
             self.weights = new_weights
 
         # Only update if prev_s exists (e.g., not first iteration of action loop)
@@ -54,7 +54,7 @@ class ApproxQAgent(QLearningAgent):
             # Batch update weights
             new_weights = util.Counter()
             for ft in self.features:
-                new_weights[ft] = self.weights[ft] + self.alpha * self.getN(self.prev_s.getCurr(), self.prev_a) * (reward + self.gamma * nextStateValue - prev_q) * self.features[ft]
+                new_weights[ft] = self.weights[ft] + self.alpha * (reward + self.gamma * nextStateValue - prev_q) * self.features[ft]
             self.weights = new_weights
         #First iteration
         else:    

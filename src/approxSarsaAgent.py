@@ -19,7 +19,7 @@ class ApproxSarsaAgent(ApproxQAgent):
             # Batch update weights
             new_weights = util.Counter()
             for ft in self.features:
-                new_weights[ft] = self.weights[ft] + self.alpha * self.getN(self.prev_s.getCurr(), self.prev_a) * reward * self.features[ft]
+                new_weights[ft] = self.weights[ft] + self.alpha * reward * self.features[ft]
             self.weights = new_weights
         # Only update if prev_s exists (e.g., not first iteration of action loop)
         elif self.prev_s:
@@ -33,7 +33,7 @@ class ApproxSarsaAgent(ApproxQAgent):
 
             q_val = self.getQ(state, action)
             for ft in self.features:
-                new_weights[ft] = self.weights[ft] + self.alpha * self.getN(self.prev_s.getCurr(), self.prev_a) * (reward + self.gamma * q_val - prev_q) * self.features[ft]
+                new_weights[ft] = self.weights[ft] + self.alpha * (reward + self.gamma * q_val - prev_q) * self.features[ft]
             self.weights = new_weights
         #First iteration
         else:
