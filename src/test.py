@@ -1,54 +1,34 @@
-# SEE README.md FOR PREREQUISITE INSTALL INSTRUCTIONS
-
+# OpenAI Gym Framework and Super Mario Bros
 import gym
-import gym_pull
+# Only need to pull this once
+#import gym_pull
+#gym_pull.pull('github.com/ppaquette/gym-super-mario@gabegrand')
+import ppaquette_gym_super_mario
 from ppaquette_gym_super_mario import wrappers
+
+# Python modules
 import multiprocessing
-from qAgent import QLearningAgent
-from approxQAgent import ApproxQAgent
-from approxSarsaAgent import ApproxSarsaAgent
+import numpy as np
+
+# Our code
 import hyperparameters as hp
 import features as ft
 from rewardModel import rewardModel
-import numpy as np
+import util
 
-# Initialize the correct agent
-agent = None
-if hp.AGENT_TYPE == 0:
-    agent = QLearningAgent()
-    print "USING EXACT Q AGENT"
-elif hp.AGENT_TYPE == 1:
-    agent = ApproxQAgent()
-    print "USING APPROX Q AGENT"
-elif hp.AGENT_TYPE == 2:
-    agent = ApproxSarsaAgent()
-    print "USING APPROX SARSA AGENT"
-else:
-    raise ValueError("Invalid AGENT_TYPE in hyperparameters")
+# Agents
+from qAgent import QLearningAgent
+from approxQAgent import ApproxQAgent
+from approxSarsaAgent import ApproxSarsaAgent
+from randomAgent import RandomAgent
+from heuristicAgent import HeuristicAgent
 
-# Load from previous saved Q values
-if hp.LOAD_FROM is not None:
+import subprocess
+import sys
+import os
 
-    print('Loading Q values from %s' % hp.LOAD_FROM)
-    agent.load(hp.LOAD_FROM)
-
-    # Start iterations from where we left off
-    j = int(hp.LOAD_FROM[hp.LOAD_FROM.rfind('-')+1:hp.LOAD_FROM.rfind('.pickle')])
-    print('Starting at iteration %d' % j)
-
-else:
-    j = 0
-
-# Diagnostics
-diagnostics = {}
-num_freezes = 0
-
-print('-- START training iterations')
-i = 1
-while i <= hp.TRAINING_ITERATIONS:
-
-    # Initialize environment
-    print('-- Creating environment...')
+try:
+    print('-- Creating environment')
     env = gym.make(hp.LEVEL)
 
     print('-- Acquiring multiprocessing lock')
@@ -62,93 +42,122 @@ while i <= hp.TRAINING_ITERATIONS:
     print('-- Resetting environment')
     env.reset()
 
-    print('-- Resetting agent')
-    agent.reset()
+    # Initialize the correct agent
+    if hp.AGENT_TYPE == 0:
+        agent = HeuristicAgent()
+    elif hp.AGENT_TYPE == 1:
+        agent = QLearningAgent()
+    elif hp.AGENT_TYPE == 2:
+        agent = ApproxQAgent()
+    elif hp.AGENT_TYPE == 3:
+        agent = ApproxSarsaAgent()
+    else:
+        raise ValueError("Invalid AGENT_TYPE in hyperparameters")
+
+    print("-- Using %s" % agent.__class__.__name__)
+
+    # Load from previous saved Q values
+    if hp.LOAD_FROM is not None:
+
+        print('Loading Q values from %s' % hp.LOAD_FROM)
+        agent.load(hp.LOAD_FROM)
+
+        # Start iterations from where we left off
+        j = int(hp.LOAD_FROM[hp.LOAD_FROM.rfind('-')+1:hp.LOAD_FROM.rfind('.pickle')])
+        print('Starting at iteration %d' % j)
+
+    else:
+        j = 0
 
     # Initialize reward function
     rewardFunction = rewardModel()
 
-    print('-- START playing iteration %d / %d' % (i + j, hp.TRAINING_ITERATIONS + j))
-    done = dead = False
+    # Diagnostics
+    diagnostics = {}
 
-    # Sample first action randomly
-    action = env.action_space.sample()
-    state, reward, _, info = env.step(action)
+    i = 1
 
-    # Choose action according to Q
-    action = agent.getAction(state)
+    # Begin training loop
+    while i <= hp.TRAINING_ITERATIONS:
 
-    # Repeat each action for set number of timesteps
-    action_counter = hp.ACTION_DURATION
+        print('-- Resetting agent')
+        agent.reset()
 
-    while not done:
+        print('-- START playing iteration %d / %d' % (i + j, hp.TRAINING_ITERATIONS + j))
 
-        # Take action
-        nextState, orig_reward, dead, info = env.step(action)
-        action_counter -= 1
+        # Sample first action randomly
+        action = env.action_space.sample()
+        state = None
+        while (ft.marioPosition(state) is None):
+            state, reward, _, info = env.step(action)
 
-        # Update Q values and compute next action
-        if action_counter <= 0:
+        if hp.AGENT_TYPE > 1:
+            state = util.State(state, None, info['distance'], None)
 
-            # Check if Mario is dead
+        # Compute custom reward
+        reward = rewardFunction.getReward(reward, info)
+
+        dead = False
+
+        # Begin main action-perception loop
+        while not (info['iteration'] > i):
+
             if dead:
-                done = True
-
-            # Compute custom reward
-            reward = rewardFunction.getReward(orig_reward, info)
-
-            # Only factored into update for Sarsa
-            nextAction = None
-            if hp.AGENT_TYPE == 2:
-                nextAction = agent.getAction(nextState)
-
-            # Update Q values; nextAction only used in Sarsa
-            agent.update({'state': state,
-                          'action': action,
-                          'nextState': nextState,
-                          'nextAction': nextAction,
-                          'reward': reward,
-                          'orig_reward': orig_reward})
-
-            # Advance the state and action
-            state = nextState
-
-            # Choose next action according to Q. If SARSA, nextAction has already been chosen.
-            if hp.AGENT_TYPE == 2:
-                action = nextAction
+                # Take NOOP action til environment ready to reset
+                _, _, ready, _ = env.step(0)
+                if ready:
+                    break
             else:
-                action = agent.getAction(nextState)
-            action_counter = hp.ACTION_DURATION
+                # Choose action according to Q
+                action = agent.getActionAndUpdate(state, reward)
 
-    # Handle case where game gets stuck
-    if 'ignore' in info.keys() and info['ignore']:
-        print('Game stuck. Resetting...')
-        num_freezes += 1
-    else:
+                # If Mario is off the screen, assume he is dead
+                if action is None:
+                    dead = True
+                    continue
+
+                # Take action
+                nextState, reward, _, info = env.step(action)
+
+                # Compute custom reward
+                reward = rewardFunction.getReward(reward, info)
+
+                # Advance the state
+                if hp.AGENT_TYPE > 1:
+                    state.step(nextState, info['distance'])
+                else:
+                    state = nextState
+
         # Update diagnostics
-        diagnostics[i] = {'freezes': num_freezes,
-                          'states_learned': agent.numStatesLearned(),
+        diagnostics[i] = {'states_learned': agent.numStatesLearned(),
                           'distance': info['distance'],
-                          'score': info['score'],
-                          }
+                          'score': info['score']}
 
         print(info)
-        print(diagnostics[i])
+        # print(diagnostics[i])
 
         # Save Q-values
         if i % hp.SAVE_EVERY == 0:
             print('Saving Q values...')
             agent.save(i, j, diagnostics[i])
 
-        print agent.getWeights()
+        if hp.AGENT_TYPE > 1:
+            print agent.getWeights()
 
         # Go to next iteration
         print('Iteration %d / %d complete.' % (i + j, hp.TRAINING_ITERATIONS + j))
-        i += 1
+        i = info['iteration'];
 
     print('-- Closing environment')
     env.close()
 
-print('-- DONE training iterations')
+    print('-- DONE training iterations')
+    print diagnostics
 
-print diagnostics
+    # environment wasn't dying, so kill it
+    subprocess.call(['./kill-mario.sh'])
+# Die on interrupt
+except KeyboardInterrupt:
+    # environment wasn't dying, so kill it
+    subprocess.call(['./kill-mario.sh'])
+    os._exit(0)

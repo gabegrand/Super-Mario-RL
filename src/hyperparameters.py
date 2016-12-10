@@ -5,7 +5,7 @@ DISPLAY_WARNINGS = False
 WORLD = '1-3'
 LEVEL = 'ppaquette/SuperMarioBros-' + WORLD + '-Tiles-v0'
 
-TRAINING_ITERATIONS = 10
+TRAINING_ITERATIONS = 1
 
 # Whether to load from existing Q values file
 LOAD_FROM = None
