@@ -16,12 +16,12 @@ class QLearningAgent(AbstractAgent):
 
     def getActionAndUpdate(self, s_prime, r_prime):
         assert s_prime is not None
-        assert isinstance(s_prime, np.ndarray)
+        assert isinstance(s_prime, util.State)
 
         action_should_be_none = False
 
         # Terminal case
-        if feat.marioPosition(s_prime) is None:
+        if feat.marioPosition(s_prime.getTiles()) is None:
             print('MODEL: Mario is dead. Returning action = None.')
             r_prime -= hp.DEATH_PENALTY
             action_should_be_none = True
@@ -53,7 +53,7 @@ class QLearningAgent(AbstractAgent):
             self.a = self.computeActionFromQValues(s_prime)
 
         # Store state and reward for next iteration
-        self.s = np.copy(s_prime)
+        self.s = s_prime.copy()
         self.r = r_prime
 
         return self.a
@@ -64,16 +64,16 @@ class QLearningAgent(AbstractAgent):
         self.r = None
 
     def getN(self, state, action):
-        return self.N[str(state), action]
+        return self.N[str(state.getTiles()), action]
 
     def incN(self, state, action):
-        self.N[str(state), action] += 1
+        self.N[str(state.getTiles()), action] += 1
 
     def getQ(self, state, action):
-        return self.Q[str(state), action]
+        return self.Q[str(state.getTiles()), action]
 
     def setQ(self, state, action, q_val):
-        self.Q[str(state), action] = q_val
+        self.Q[str(state.getTiles()), action] = q_val
 
     def computeValueFromQValues(self, state):
 

@@ -91,8 +91,7 @@ try:
         while (ft.marioPosition(state) is None):
             state, reward, _, info = env.step(action)
 
-        if hp.AGENT_TYPE > 1:
-            state = util.State(state, info['distance'], None)
+        state = util.State(state, info['distance'], None)
 
         # Compute custom reward
         reward = rewardFunction.getReward(reward, info)
@@ -123,10 +122,7 @@ try:
                 reward = rewardFunction.getReward(reward, info)
 
                 # Advance the state
-                if hp.AGENT_TYPE > 1:
-                    state.step(nextState, info['distance'])
-                else:
-                    state = nextState
+                state.step(nextState, info['distance'])
 
         # Handles ApproxSARSA too, since child of ApproxQ
         if isinstance(agent, ApproxQAgent):

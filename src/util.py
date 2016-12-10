@@ -40,7 +40,7 @@ class State:
         self.currDist = newDist
 
     def copy(self):
-        return State(np.copy(self.tiles), self.currDist, self.prevDist)
+        return State(np.copy(self.tiles), copy.copy(self.currDist), copy.copy(self.prevDist))
 
 class FixedRandom:
     def __init__(self):

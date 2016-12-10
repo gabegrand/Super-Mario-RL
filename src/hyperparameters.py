@@ -14,7 +14,7 @@ LOAD_FROM = None
 SAVE_EVERY = 10
 
 # 0 is Random Agent, 1 regular QLearningAgent, 2 is ApproxQAgent, 3 is ApproxSarsaAgent
-AGENT_TYPE = 3
+AGENT_TYPE = 1
 
 # Q Learning Agent Parameters
 ALPHA = 0.1     # Learning rate
