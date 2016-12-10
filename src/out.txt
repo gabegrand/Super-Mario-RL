@@ -1,0 +1,13 @@
+[2016-12-10 11:07:16,524] Found and registered 66 user environments.
+[2016-12-10 11:07:16,540] Making new env: ppaquette/SuperMarioBros-1-3-Tiles-v0
+USING APPROX Q AGENT
+-- START training iterations
+-- Creating environment...
+-- Acquiring multiprocessing lock
+-- Resetting environment
+-- Resetting agent
+-- START playing iteration 1 / 10
+Traceback (most recent call last):
+  File "test.py", line 79, in <module>
+    action = agent.getAction(state)
+AttributeError: ApproxQAgent instance has no attribute 'getAction'
