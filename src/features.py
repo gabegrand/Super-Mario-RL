@@ -29,18 +29,20 @@ def getFeatures(state, action):
 	features['leftAction'] = leftAction(action)
 
 	# Stuck prevention features
-	features['stuck'] = stuck(curr_state)
+	features['stuck'] = stuck(curr_state, curr_mpos)
 
 	# Gap avoidance features
-	features['gapBelow'] = gapBelow(curr_state)
-	features['gapRight'] = gapRight(curr_state)
-	features['gapLeft'] = gapLeft(curr_state)
+	features['gapBelow'] = gapBelow(curr_state, curr_mpos)
+	features['gapRight'] = gapRight(curr_state, curr_mpos)
+	features['gapLeft'] = gapLeft(curr_state, curr_mpos)
 
 	# Enemy features
-	features['enemyOnScreen'] = enemyOnScreen(curr_state)
-	features['canStompEnemy'] = canStompEnemy(curr_state)
-	features['enemyDangerRight'] = enemyDangerRight(curr_state)
-	features['enemyDangerLeft'] = enemyDangerLeft(curr_state)
+	if enemyOnScreen(curr_state):
+		features['enemyOnScreen'] = 1
+		features['canStompEnemy'] = canStompEnemy(curr_state, curr_mpos)
+		if enemyDanger(curr_state, curr_mpos):
+			features['enemyDangerRight'] = enemyDangerRight(curr_state, curr_mpos)
+			features['enemyDangerLeft'] = enemyDangerLeft(curr_state, curr_mpos)
 
 	# features['roofVertDistance'] = roofVertDistance(curr_state)
 
@@ -76,34 +78,34 @@ def rightAction(action):
 def leftAction(action):
 	return int(action in [3, 4, 5, 6])
 
-def stuck(state):
-	return int(not bool(canMoveRight(state)))
+def stuck(state, mpos):
+	return int(not bool(canMoveRight(state, mpos)))
 
-def gapBelow(state):
-	return int(not bool(groundBelow(state)))
+def gapBelow(state, mpos):
+	return int(not bool(groundBelow(state, mpos)))
 
-def gapRight(state):
-	return int(groundRightDistance(state) < 0.2)
+def gapRight(state, mpos):
+	return int(groundRightDistance(state, mpos) < 0.2)
 
-def gapLeft(state):
-	return int(groundLeftDistance(state) < 0.2)
+def gapLeft(state, mpos):
+	return int(groundLeftDistance(state, mpos) < 0.2)
 
-def canStompEnemy(state):
-	if bool(enemyOnScreen(state)):
-		m_row, m_col = _marioPosition(state)
-		# Look below in same column, up to two spaces down
-		for row in xrange(m_row, min(m_row + 2, state.shape[0])):
-			if state[row, m_col] == 2:
-				return 1
+def canStompEnemy(state, mpos):
+	m_row, m_col = mpos
+	# Look below in same column, up to two spaces down
+	for row in xrange(m_row, min(m_row + 2, state.shape[0])):
+		if state[row, m_col] == 2:
+			return 1
 	return 0
 
-def enemyDangerRight(state):
-	return int(distRightEnemy(state) < 0.2 and distUpEnemy(state) < 0.2 and distDownEnemy(state) < 0.2)
+def enemyDanger(state, mpos):
+	return int(distUpEnemy(state, mpos) < 0.2 and distDownEnemy(state, mpos) < 0.2)
 
-def enemyDangerLeft(state):
-	return int(distLeftEnemy(state) < 0.2 and distUpEnemy(state) < 0.2 and distDownEnemy(state) < 0.2)
+def enemyDangerRight(state, mpos):
+	return int(distRightEnemy(state, mpos) < 0.2)
 
-
+def enemyDangerLeft(state, mpos):
+	return int(distLeftEnemy(state, mpos) < 0.2)
 
 
 # Binary feature as to whether Mario is moving up
@@ -184,8 +186,8 @@ def groundVertDistance(state):
 # there exists at least one object (ground=1) at a height lower than Mario
 # Only call if Mario is on screen
 # Norm factor is state.shape[1] - 1, which is 15
-def groundLeftDistance(state):
-	m_row, m_col = _marioPosition(state)
+def groundLeftDistance(state, mpos):
+	m_row, m_col = mpos
 
 	# if Mario at bottom of screen or in left most column, no ground to left
 	if m_row == state.shape[0] - 1 or m_col == 0:
@@ -209,8 +211,8 @@ def groundLeftDistance(state):
 # there exists at least one object (ground=1) at a height lower than Mario
 # Only call if Mario is on screen
 # Norm factor is state.shape[1] - 1, which is 15
-def groundRightDistance(state):
-	m_row, m_col = _marioPosition(state)
+def groundRightDistance(state, mpos):
+	m_row, m_col = mpos
 
 	# if Mario at bottom of screen or in right most column, no ground to right
 	if m_row == state.shape[0] - 1 or m_col == state.shape[1] - 1:
@@ -232,8 +234,8 @@ def groundRightDistance(state):
 # left distance to nearest enemy (dist to edge of screen if no enemy)
 # Only call if Mario is on screen
 # Norm factor is state.shape[1], which is 16
-def distLeftEnemy(state):
-	m_row, m_col = _marioPosition(state)
+def distLeftEnemy(state, mpos):
+	m_row, m_col = mpos
 
 	# if no enemies, return left horizontal distance remaining on screen
 	e_rows, e_cols = np.nonzero(state[:, :m_col + 1] == 2)
@@ -257,8 +259,8 @@ def distLeftEnemy(state):
 # right distance to nearest enemy (dist to edge of screen if no enemy)
 # Only call if Mario is on screen
 # Norm factor is state.shape[1], which is 16
-def distRightEnemy(state):
-	m_row, m_col = _marioPosition(state)
+def distRightEnemy(state, mpos):
+	m_row, m_col = mpos
 
 	# if no enemies, return right horizontal distance remaining on screen
 	e_rows, e_cols = np.nonzero(state[:, m_col:] == 2)
@@ -281,8 +283,8 @@ def distRightEnemy(state):
 # up distance to nearest enemy (dist to edge of screen if no enemy)
 # Only call if Mario is on screen
 # Norm factor is state.shape[0], which is 13
-def distUpEnemy(state):
-	m_row, m_col = _marioPosition(state)
+def distUpEnemy(state, mpos):
+	m_row, m_col = mpos
 
 	# if no enemies, return up vert dist to edge
 	e_rows, e_cols = np.nonzero(state[:m_row + 1, :] == 2)
@@ -307,8 +309,8 @@ def distUpEnemy(state):
 # down distance to nearest enemy (dist to edge of screen if no enemy)
 # Only call if Mario is on screen
 # Norm factor is state.shape[0], which is 13
-def distDownEnemy(state):
-	m_row, m_col = _marioPosition(state)
+def distDownEnemy(state, mpos):
+	m_row, m_col = mpos
 
 	# if no enemies, return down vert dist to edge
 	e_rows, e_cols = np.nonzero(state[m_row:, :] == 2)
@@ -337,8 +339,8 @@ def enemyOnScreen(state):
 
 # Return whether there is ground below Mario (1=true)
 # Only call if Mario is on screen
-def groundBelow(state):
-	m_row, m_col = _marioPosition(state)
+def groundBelow(state, mpos):
+	m_row, m_col = mpos
 
 	# get the rows in Mario's column with objects, if any
 	col_contents = state[m_row:, m_col]
@@ -372,8 +374,8 @@ def canMoveDown(state):
 
 # Return whether Mario can move right in his position (1=true)
 # Only call if Mario is on screen
-def canMoveRight(state):
-	m_row, m_col = _marioPosition(state)
+def canMoveRight(state, mpos):
+	m_row, m_col = mpos
 
 	if m_col < state.shape[1] - 1:
 		if state[m_row, m_col + 1] != 1:
