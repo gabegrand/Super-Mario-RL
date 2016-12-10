@@ -21,6 +21,8 @@ ALPHA = 0.1     # Learning rate
 MIN_EPSILON = 0.01   # Random move probability
 GAMMA = 0.5     # Discount factor
 
+EP_DEC = 50.0
+
 K = 10.0 # k value for exploration function, should be a float; set to 0 to ignore
 
 # Penalty for dying in reward function
