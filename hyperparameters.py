@@ -14,10 +14,10 @@ LOAD_FROM = None
 SAVE_EVERY = 10
 
 # 0 is Random Agent, 1 regular QLearningAgent, 2 is ApproxQAgent, 3 is ApproxSarsaAgent
-AGENT_TYPE = 2
+AGENT_TYPE = 0
 
 # Q Learning Agent Parameters
-ALPHA = 0.01     # Learning rate
+ALPHA = 0.001     # Learning rate
 MIN_EPSILON = 0.001   # Random move probability
 GAMMA = 0.5     # Discount factor
 
@@ -62,9 +62,9 @@ PRIOR = [
     1/NORM,    #4
     1/NORM,    #5
     1/NORM,    #6
-    10/NORM,    #7
-    10/NORM,    #8
-    10/NORM,    #9
+    5/NORM,    #7
+    5/NORM,    #8
+    20/NORM,    #9
     10/NORM,    #10
     1/NORM,    #11
     1/NORM,    #12

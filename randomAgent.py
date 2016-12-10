@@ -4,13 +4,15 @@ from datetime import datetime
 import pickle
 import hyperparameters as hp
 import random
+import numpy as np
+import features as ft
 
 class RandomAgent:
     def __init__(self):
         self.actions = hp.MAPPING.keys()
 
     def getActionAndUpdate(self, state, reward):
-        return random.choice(self.actions)
+        return np.random.choice(self.actions, 1, p=hp.PRIOR)[0]
 
     def save(self, i, j, diagnostics):
         # Build save file name
@@ -27,7 +29,7 @@ class RandomAgent:
         return None
 
     def reset(self):
-        return None
+        self.stuck_duration = 0
 
     def numStatesLearned(self):
         return None

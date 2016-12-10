@@ -21,6 +21,7 @@ from qAgent import QLearningAgent
 from approxQAgent import ApproxQAgent
 from approxSarsaAgent import ApproxSarsaAgent
 from randomAgent import RandomAgent
+from heuristicAgent import HeuristicAgent
 
 print('-- Creating environment')
 env = gym.make(hp.LEVEL)
@@ -38,7 +39,7 @@ env.reset()
 
 # Initialize the correct agent
 if hp.AGENT_TYPE == 0:
-    agent = RandomAgent()
+    agent = HeuristicAgent()
 elif hp.AGENT_TYPE == 1:
     agent = QLearningAgent()
 elif hp.AGENT_TYPE == 2:
