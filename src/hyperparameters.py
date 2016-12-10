@@ -2,7 +2,7 @@
 DISPLAY_WARNINGS = False
 
 # Game
-WORLD = '1-3'
+WORLD = '1-1'
 LEVEL = 'ppaquette/SuperMarioBros-' + WORLD + '-Tiles-v0'
 
 TRAINING_ITERATIONS = 10

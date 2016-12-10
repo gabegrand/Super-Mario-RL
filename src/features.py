@@ -3,7 +3,7 @@ import numpy as np
 import sys
 import util
 
-# Returns a vector (actually a util.Counter object) of features
+# Returns a vector of features as a util.Counter() object
 def getFeatures(state, action):
 	assert isinstance(state, util.State)
 
@@ -21,26 +21,30 @@ def getFeatures(state, action):
 
 	features = util.Counter()
 
-	features['canMoveLeft'] = canMoveLeft(curr_state)
-	features['canMoveRight'] = canMoveRight(curr_state)
-	features['canMoveUp'] = canMoveUp(curr_state)
-	features['canMoveDown'] = canMoveDown(curr_state)
+	# Basic movement features
+	features['horzVelocity'] = horzVelocity(prev_dist, curr_dist)
+	features['runAction'] = runAction(action)
+	features['jumpAction'] = jumpAction(action)
+	features['rightAction'] = rightAction(action)
+	features['leftAction'] = leftAction(action)
 
-	features['rightVelocity'] = rightVelocity(prev_dist, curr_dist)
-	features['leftVelocity'] = leftVelocity(prev_dist, curr_dist)
+	# Stuck prevention features
+	features['stuck'] = stuck(curr_state, curr_mpos)
 
-	# features['movingUp'] = movingUp(prev_state, curr_state)
-	# features['movingDown'] = movingDown(prev_state, curr_state)
-	features['groundVertDistance'] = groundVertDistance(curr_state)
-	features['roofVertDistance'] = roofVertDistance(curr_state)
-	# features['groundLeftDistance'] = groundLeftDistance(curr_state)
-	# features['groundRightDistance'] = groundRightDistance(curr_state)
-	# features['distLeftEnemy'] = distLeftEnemy(curr_state)
-	# features['distRightEnemy'] = distRightEnemy(curr_state)
-	# features['distUpEnemy'] = distUpEnemy(curr_state)
-	# features['distDownEnemy'] = distDownEnemy(curr_state)
-	features['enemyOnScreen'] = enemyOnScreen(curr_state)
-	features['groundBelow'] = groundBelow(curr_state)
+	# Gap avoidance features
+	features['gapBelow'] = gapBelow(curr_state, curr_mpos)
+	features['gapRight'] = gapRight(curr_state, curr_mpos)
+	features['gapLeft'] = gapLeft(curr_state, curr_mpos)
+
+	# Enemy features
+	if enemyOnScreen(curr_state):
+		features['enemyOnScreen'] = 1
+		features['canStompEnemy'] = canStompEnemy(curr_state, curr_mpos)
+		if enemyDanger(curr_state, curr_mpos):
+			features['enemyDangerRight'] = enemyDangerRight(curr_state, curr_mpos)
+			features['enemyDangerLeft'] = enemyDangerLeft(curr_state, curr_mpos)
+
+	# features['roofVertDistance'] = roofVertDistance(curr_state)
 
 	return features
 
@@ -61,6 +65,48 @@ def marioPosition(state):
 		return rows[0], cols[0]
 
 # FEATURE FUNCTIONS --- Any features used should be scaled [0,1]
+
+def runAction(action):
+	return int(action in [5, 6, 9, 10, 12, 13])
+
+def jumpAction(action):
+	return int(action in [4, 6, 8, 10, 11, 13])
+
+def rightAction(action):
+	return int(action in [7, 8, 9, 10])
+
+def leftAction(action):
+	return int(action in [3, 4, 5, 6])
+
+def stuck(state, mpos):
+	return int(not bool(canMoveRight(state, mpos)))
+
+def gapBelow(state, mpos):
+	return int(not bool(groundBelow(state, mpos)))
+
+def gapRight(state, mpos):
+	return int(groundRightDistance(state, mpos) < 0.2)
+
+def gapLeft(state, mpos):
+	return int(groundLeftDistance(state, mpos) < 0.2)
+
+def canStompEnemy(state, mpos):
+	m_row, m_col = mpos
+	# Look below in same column, up to two spaces down
+	for row in xrange(m_row, min(m_row + 2, state.shape[0])):
+		if state[row, m_col] == 2:
+			return 1
+	return 0
+
+def enemyDanger(state, mpos):
+	return int(distUpEnemy(state, mpos) < 0.2 and distDownEnemy(state, mpos) < 0.2)
+
+def enemyDangerRight(state, mpos):
+	return int(distRightEnemy(state, mpos) < 0.2)
+
+def enemyDangerLeft(state, mpos):
+	return int(distLeftEnemy(state, mpos) < 0.2)
+
 
 # Binary feature as to whether Mario is moving up
 # Only call if mario is currently on screen
@@ -96,19 +142,10 @@ def movingDown(prev_state, curr_state):
 
 # Mario's velocity on the x axis.
 # Scaled to [0, 1], since max velocity is 8.0
-def rightVelocity(prev_dist, curr_dist):
+def horzVelocity(prev_dist, curr_dist):
 	if prev_dist and curr_dist:
-		return max(float(curr_dist - prev_dist) / 8.0, 0.0)
-	else:
-		return 0.0
-
-# Mario's velocity on the x axis.
-# Scaled to [0, 1], since max velocity is 8.0
-def leftVelocity(prev_dist, curr_dist):
-	if prev_dist and curr_dist:
-		return max(float(prev_dist - curr_dist) / 8.0, 0.0)
-	else:
-		return 0.0
+		return float(curr_dist - prev_dist) / 8.0
+	return 0.0
 
 # Returns the number of rows between Mario and the roof (0 if next level is roof)
 # if no roof above Mario, return number of rows between Mario and offscreen
@@ -149,8 +186,8 @@ def groundVertDistance(state):
 # there exists at least one object (ground=1) at a height lower than Mario
 # Only call if Mario is on screen
 # Norm factor is state.shape[1] - 1, which is 15
-def groundLeftDistance(state):
-	m_row, m_col = _marioPosition(state)
+def groundLeftDistance(state, mpos):
+	m_row, m_col = mpos
 
 	# if Mario at bottom of screen or in left most column, no ground to left
 	if m_row == state.shape[0] - 1 or m_col == 0:
@@ -174,8 +211,8 @@ def groundLeftDistance(state):
 # there exists at least one object (ground=1) at a height lower than Mario
 # Only call if Mario is on screen
 # Norm factor is state.shape[1] - 1, which is 15
-def groundRightDistance(state):
-	m_row, m_col = _marioPosition(state)
+def groundRightDistance(state, mpos):
+	m_row, m_col = mpos
 
 	# if Mario at bottom of screen or in right most column, no ground to right
 	if m_row == state.shape[0] - 1 or m_col == state.shape[1] - 1:
@@ -197,8 +234,8 @@ def groundRightDistance(state):
 # left distance to nearest enemy (dist to edge of screen if no enemy)
 # Only call if Mario is on screen
 # Norm factor is state.shape[1], which is 16
-def distLeftEnemy(state):
-	m_row, m_col = _marioPosition(state)
+def distLeftEnemy(state, mpos):
+	m_row, m_col = mpos
 
 	# if no enemies, return left horizontal distance remaining on screen
 	e_rows, e_cols = np.nonzero(state[:, :m_col + 1] == 2)
@@ -222,8 +259,8 @@ def distLeftEnemy(state):
 # right distance to nearest enemy (dist to edge of screen if no enemy)
 # Only call if Mario is on screen
 # Norm factor is state.shape[1], which is 16
-def distRightEnemy(state):
-	m_row, m_col = _marioPosition(state)
+def distRightEnemy(state, mpos):
+	m_row, m_col = mpos
 
 	# if no enemies, return right horizontal distance remaining on screen
 	e_rows, e_cols = np.nonzero(state[:, m_col:] == 2)
@@ -246,8 +283,8 @@ def distRightEnemy(state):
 # up distance to nearest enemy (dist to edge of screen if no enemy)
 # Only call if Mario is on screen
 # Norm factor is state.shape[0], which is 13
-def distUpEnemy(state):
-	m_row, m_col = _marioPosition(state)
+def distUpEnemy(state, mpos):
+	m_row, m_col = mpos
 
 	# if no enemies, return up vert dist to edge
 	e_rows, e_cols = np.nonzero(state[:m_row + 1, :] == 2)
@@ -272,8 +309,8 @@ def distUpEnemy(state):
 # down distance to nearest enemy (dist to edge of screen if no enemy)
 # Only call if Mario is on screen
 # Norm factor is state.shape[0], which is 13
-def distDownEnemy(state):
-	m_row, m_col = _marioPosition(state)
+def distDownEnemy(state, mpos):
+	m_row, m_col = mpos
 
 	# if no enemies, return down vert dist to edge
 	e_rows, e_cols = np.nonzero(state[m_row:, :] == 2)
@@ -302,8 +339,8 @@ def enemyOnScreen(state):
 
 # Return whether there is ground below Mario (1=true)
 # Only call if Mario is on screen
-def groundBelow(state):
-	m_row, m_col = _marioPosition(state)
+def groundBelow(state, mpos):
+	m_row, m_col = mpos
 
 	# get the rows in Mario's column with objects, if any
 	col_contents = state[m_row:, m_col]
@@ -319,7 +356,7 @@ def canMoveUp(state):
 	m_row, m_col = _marioPosition(state)
 
 	if m_row > 0:
-		if state[m_row-1, m_col] in [0, 3]:
+		if state[m_row-1, m_col] != 1:
 			return 1.0
 		return 0.0
 	return 1.0
@@ -330,18 +367,18 @@ def canMoveDown(state):
 	m_row, m_col = _marioPosition(state)
 
 	if m_row < state.shape[0] - 1:
-		if state[m_row+1, m_col] in [0, 3]:
+		if state[m_row+1, m_col] != 1:
 			return 1.0
 		return 0.0
 	return 1.0
 
 # Return whether Mario can move right in his position (1=true)
 # Only call if Mario is on screen
-def canMoveRight(state):
-	m_row, m_col = _marioPosition(state)
+def canMoveRight(state, mpos):
+	m_row, m_col = mpos
 
 	if m_col < state.shape[1] - 1:
-		if state[m_row, m_col + 1] in [0, 3]:
+		if state[m_row, m_col + 1] != 1:
 			return 1.0
 		return 0.0
 	return 1.0
@@ -352,7 +389,7 @@ def canMoveLeft(state):
 	m_row, m_col = _marioPosition(state)
 
 	if m_col > 0:
-		if state[m_row, m_col - 1] in [0, 3]:
+		if state[m_row, m_col - 1] != 1:
 			return 1.0
 		return 0.0
 	return 0.0
