@@ -33,8 +33,12 @@ def getFeatures(state, action):
 
 	# Gap avoidance features
 	features['gapBelow'] = gapBelow(curr_state, curr_mpos)
-	features['gapRight'] = gapRight(curr_state, curr_mpos)
-	features['gapLeft'] = gapLeft(curr_state, curr_mpos)
+	gap_right_dist = groundRightDistance(curr_state, curr_mpos)
+	gap_left_dist = groundLeftDistance(curr_state, curr_mpos)
+	features['gapRightFar'] = gap_right_dist < 0.2
+	features['gapLeftFar'] = gap_left_dist < 0.2
+	features['gapRightNear'] = gap_right_dist < 0.08
+	features['gapLeftNear'] = gap_left_dist < 0.08
 
 	# Enemy features
 	if enemyOnScreen(curr_state):
@@ -83,12 +87,6 @@ def stuck(state, mpos):
 
 def gapBelow(state, mpos):
 	return int(not bool(groundBelow(state, mpos)))
-
-def gapRight(state, mpos):
-	return int(groundRightDistance(state, mpos) < 0.2)
-
-def gapLeft(state, mpos):
-	return int(groundLeftDistance(state, mpos) < 0.2)
 
 def canStompEnemy(state, mpos):
 	m_row, m_col = mpos
@@ -167,8 +165,8 @@ def roofVertDistance(state):
 # if no ground below Mario, return number of rows to offscreen
 # Only call if Mario is on screen
 # Norm factor is state.shape[0], which is 13
-def groundVertDistance(state):
-	m_row, m_col = _marioPosition(state)
+def groundVertDistance(state, mpos):
+	m_row, m_col = mpos
 
 	if m_row < state.shape[0] - 1:
 		# get the rows in Mario's column with objects, if any

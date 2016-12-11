@@ -14,7 +14,7 @@ class ApproxSarsaAgent(ApproxQAgent):
             r_prime -= hp.DEATH_PENALTY
             q_prime = r_prime
         else:
-            a_prime = self.computea_primeFromQValues(s_prime)
+            a_prime = self.computeActionFromQValues(s_prime)
             q_prime = self.getQ(s_prime, a_prime)
 
         # Only update if s exists (e.g., not first iteration of a_prime loop)

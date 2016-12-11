@@ -91,8 +91,9 @@ class ApproxQAgent(AbstractAgent):
 
         if util.flipCoin(max(hp.MIN_EPSILON, hp.EP_DEC / (hp.EP_DEC + self.iter))):
             self.iter += 1
-            print "Taking random action...", random.random()
-            return np.random.choice(self.actions, 1, p=hp.PRIOR)[0]
+            a = np.random.choice(self.actions, 1, p=hp.PRIOR)[0]
+            print(str(a) + '*')
+            return a
 
         # Keep track of values of each action
         action_values = []
@@ -110,6 +111,8 @@ class ApproxQAgent(AbstractAgent):
         # Return action with max value, breaking ties randomly
         action = self.actions[random.choice(indices)]
 
+        print action
+
         return action
 
     def numStatesLearned(self):
@@ -124,7 +127,7 @@ class ApproxQAgent(AbstractAgent):
         now = datetime.now()
         fname = '-'.join([str(x) for x in [now.year, now.month, now.day, now.hour, now.minute]]) + '-world-' + hp.WORLD + '-iter-' + str(i + j)
 
-        saved_vals = {'weights': self.weights, 'N': self.N, 'diagnostics': diagnostics}
+        saved_vals = {'weights': self.weights, 'N': self.N, 'iter': self.iter, 'diagnostics': diagnostics}
 
         with open('save/' + fname + '.pickle', 'wb') as handle:
             pickle.dump(saved_vals, handle)
@@ -135,5 +138,6 @@ class ApproxQAgent(AbstractAgent):
                 saved_vals = pickle.load(handle)
                 self.weights = saved_vals['weights']
                 self.N = saved_vals['N']
+                self.iter = saved_vals['iter']
         except:
             ValueError('Failed to load file %s' % ('save/' + fname))
