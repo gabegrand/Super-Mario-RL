@@ -1,3 +1,9 @@
+"""
+CS 182 Final Project
+Super Mario Bros. Reinforcement Learning
+Gabe Grand and Kevin Loughlin, 2016
+"""
+
 # OpenAI Gym Framework and Super Mario Bros
 import gym
 # Only need to pull this once
@@ -142,7 +148,7 @@ try:
         # Save Q-values
         if i % hp.SAVE_EVERY == 0:
             print('Saving Q values...')
-            agent.save(i, j, diagnostics[i])
+            agent.save(i, j, diagnostics)
 
         # Go to next iteration
         print('Iteration %d / %d complete.' % (i + j, hp.TRAINING_ITERATIONS + j))

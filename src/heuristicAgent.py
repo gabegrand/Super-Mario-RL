@@ -15,46 +15,54 @@ class HeuristicAgent:
 
     def getActionAndUpdate(self, state, reward):
 
+        state = state.getTiles()
+        mpos = ft.marioPosition(state)
 
-        if self.stuck_duration > 40:
+        action = None
+
+        # Get Mario unstuck
+        if self.stuck_duration > 30:
             print "Stuck!"
             if self.jumps > 20:
                 self.jumps = 0
                 self.stuck_duration = 0
             self.jumps += 1
-            if ft.groundVertDistance(state) == 0:
-                return random.choice([10, 0])
+            if ft.groundVertDistance(state, mpos) == 0:
+                action = random.choice([10, 0])
             else:
-                return 10
+                action = 10
 
-        if ft.marioPosition(state) is not None:
+        elif mpos is not None:
 
             # Check if stuck
-            if not ft.canMoveRight(state):
+            if not ft.canMoveRight(state, mpos):
                 self.stuck_duration += 1
 
-            # Check if enemy
-            if ft.distRightEnemy(state) <= 0.2 and ft.distUpEnemy(state) < 0.1 and ft.distDownEnemy(state) < 0.1:
+            # Check if enemy left
+            if ft.distRightEnemy(state, mpos) <= 0.2 and ft.distUpEnemy(state, mpos) < 0.1 and ft.distDownEnemy(state, mpos) < 0.2:
                 print "Enemy ahead!"
-                if ft.groundVertDistance(state) <= 0.01:
-                    print "Whoa there..."
-                    return random.choice([3, 4])
-                return random.choice([0, 11])
+                action = random.choice([0, 11])
 
-            if 0.0625 < ft.distLeftEnemy(state) <= 0.1:
-                print("Enemy behind!", ft.distLeftEnemy(state))
-                return random.choice([0, 11])
+            # Check if enemy right
+            elif 0.0625 < ft.distLeftEnemy(state, mpos) <= 0.1:
+                print("Enemy behind!", ft.distLeftEnemy(state, mpos))
+                action = random.choice([0, 11])
 
-            if ft.groundRightDistance(state) <= 0.3:
+            # Check if gap
+            elif ft.groundRightDistance(state, mpos) <= 0.3:
                 print "Gap ahead!"
-                if ft.groundRightDistance(state) <= 0.06:
+                if ft.groundRightDistance(state, mpos) <= 0.06:
                     print "Need to jump!"
-                    a = random.choice([10, 10, 10])
-                    print a
-                    return a
-                return 9
+                    action = 10
+                else:
+                    action = 9
 
-        return np.random.choice(self.actions, 1, p=hp.PRIOR)[0]
+        random_action = np.random.choice(self.actions, 1, p=hp.PRIOR)[0]
+
+        if not action:
+            return random_action
+        else:
+            return np.random.choice([action, random_action], 1, p=[0.99, 0.01])[0]
 
     def save(self, i, j, diagnostics):
         # Build save file name

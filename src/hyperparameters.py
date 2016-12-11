@@ -5,7 +5,7 @@ DISPLAY_WARNINGS = False
 WORLD = '1-1'
 LEVEL = 'ppaquette/SuperMarioBros-' + WORLD + '-Tiles-v0'
 
-TRAINING_ITERATIONS = 10
+TRAINING_ITERATIONS = 100
 
 # Whether to load from existing Q values file
 LOAD_FROM = None
@@ -18,27 +18,30 @@ AGENT_TYPE = 2
 
 # Q Learning Agent Parameters
 ALPHA = 0.1     # Learning rate
-MIN_EPSILON = 0.01   # Random move probability
-GAMMA = 0.5     # Discount factor
+MIN_EPSILON = 0.02   # Random move probability
+GAMMA = 0.9     # Discount factor
 
-EP_DEC = 50.0
+EP_DEC = 500.0
 
 K = 10.0 # k value for exploration function, should be a float; set to 0 to ignore
 
 # Penalty for dying in reward function
-DEATH_PENALTY = 10
+DEATH_PENALTY = 100
 
 # Proportion of score increase added to reward (0 to 1)
 SCORE_FACTOR = 1.0
 
-# How many timesteps to repeat an action
-ACTION_DURATION = 4
+# How many frames Mario is stuck for before the model rescues him
+STUCK_DURATION = 80
+
+# How many jumps the model uses to get Mario unstuck
+MAX_JUMPS = 25
 
 # Action mapping
 MAPPING = {
-    0: [0, 0, 0, 0, 0, 0],  # NOOP
-    1: [1, 0, 0, 0, 0, 0],  # Up
-    2: [0, 0, 1, 0, 0, 0],  # Down
+    # 0: [0, 0, 0, 0, 0, 0],  # NOOP
+    # 1: [1, 0, 0, 0, 0, 0],  # Up
+    # 2: [0, 0, 1, 0, 0, 0],  # Down
     3: [0, 1, 0, 0, 0, 0],  # Left
     4: [0, 1, 0, 0, 1, 0],  # Left + A
     5: [0, 1, 0, 0, 0, 1],  # Left + B
@@ -48,8 +51,8 @@ MAPPING = {
     9: [0, 0, 0, 1, 0, 1],  # Right + B
     10: [0, 0, 0, 1, 1, 1],  # Right + A + B
     11: [0, 0, 0, 0, 1, 0],  # A
-    12: [0, 0, 0, 0, 0, 1],  # B
-    13: [0, 0, 0, 0, 1, 1],  # A + B
+    # 12: [0, 0, 0, 0, 0, 1],  # B
+    # 13: [0, 0, 0, 0, 1, 1],  # A + B
 }
 
 # needs to be float
@@ -57,18 +60,13 @@ NORM = 50.0
 
 # prior dist on actions
 PRIOR = [
-    1/NORM,    #0
-    1/NORM,    #1
-    1/NORM,    #2
-    1/NORM,    #3
-    1/NORM,    #4
-    1/NORM,    #5
-    1/NORM,    #6
+    2/NORM,    #3
+    2/NORM,    #4
+    2/NORM,    #5
+    2/NORM,    #6
     5/NORM,    #7
-    20/NORM,    #8
-    5/NORM,    #9
-    10/NORM,    #10
-    1/NORM,    #11
-    1/NORM,    #12
-    1/NORM,    #13
+    5/NORM,   #8
+    20/NORM,    #9
+    10/NORM,   #10
+    2/NORM,    #11
     ]

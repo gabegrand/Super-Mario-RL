@@ -10,6 +10,9 @@ class ApproxQAgent(AbstractAgent):
         self.actions = hp.MAPPING.keys()
         self.iter = 0
 
+        self.stuck_duration = 0
+        self.jumps = 0
+
         self.r = None
         self.a = None
         self.s = None
@@ -25,9 +28,11 @@ class ApproxQAgent(AbstractAgent):
         assert isinstance(s_prime, util.State)
 
         action_should_be_none = False
+        features = None
 
         # Terminal case
-        if feat.marioPosition(s_prime.getTiles()) is None:
+        mpos = feat.marioPosition(s_prime.getTiles())
+        if mpos is None:
             print('MODEL: Mario is dead. Returning action = None.')
             action_should_be_none = True
             r_prime -= hp.DEATH_PENALTY
@@ -56,9 +61,31 @@ class ApproxQAgent(AbstractAgent):
         # If Mario is dead
         if action_should_be_none:
             self.a = None
-        # Otherwise, compute best action to take
+
+        # If situation normal, compute best action to take
         else:
             self.a = self.computeActionFromQValues(s_prime)
+
+            # If Mario is stuck, overwrite action with jump
+            if features and bool(features['stuck']):
+                self.stuck_duration += 1
+
+                # If stuck for too long, rescue him
+                if self.stuck_duration > hp.STUCK_DURATION:
+                    print "MODEL: Mario is stuck. Forcing jump to rescue..."
+
+                    # On ground, get started with jump
+                    if feat.groundVertDistance(self.s.getTiles(), mpos) == 0:
+                        self.a = random.choice([0, 10])
+                    # Jump!
+                    else:
+                        self.a = 10
+                        self.jumps += 1
+
+                    # Stop jumping and reset
+                    if self.jumps > hp.MAX_JUMPS:
+                        self.jumps = 0
+                        self.stuck_duration = 0
 
         # Store state and reward for next iteration
         self.s = s_prime.copy()
@@ -70,6 +97,8 @@ class ApproxQAgent(AbstractAgent):
         self.s = None
         self.a = None
         self.r = None
+        self.stuck_duration = 0
+        self.jumps = 0
 
     def getQ(self, state, action):
         return self.weights * feat.getFeatures(state, action)
@@ -91,8 +120,9 @@ class ApproxQAgent(AbstractAgent):
 
         if util.flipCoin(max(hp.MIN_EPSILON, hp.EP_DEC / (hp.EP_DEC + self.iter))):
             self.iter += 1
-            print "Taking random action...", random.random()
-            return np.random.choice(self.actions, 1, p=hp.PRIOR)[0]
+            a = np.random.choice(self.actions, 1, p=hp.PRIOR)[0]
+            print(str(a) + '*')
+            return a
 
         # Keep track of values of each action
         action_values = []
@@ -110,6 +140,8 @@ class ApproxQAgent(AbstractAgent):
         # Return action with max value, breaking ties randomly
         action = self.actions[random.choice(indices)]
 
+        print action
+
         return action
 
     def numStatesLearned(self):
@@ -124,16 +156,26 @@ class ApproxQAgent(AbstractAgent):
         now = datetime.now()
         fname = '-'.join([str(x) for x in [now.year, now.month, now.day, now.hour, now.minute]]) + '-world-' + hp.WORLD + '-iter-' + str(i + j)
 
-        saved_vals = {'weights': self.weights, 'N': self.N, 'diagnostics': diagnostics}
+        saved_vals = {'weights': self.weights, 'iter': self.iter, 'diagnostics': diagnostics}
 
         with open('save/' + fname + '.pickle', 'wb') as handle:
             pickle.dump(saved_vals, handle)
+
+        with open('save/' + fname + '-N' + '.pickle', 'wb') as handle:
+            print "hello"
+            pickle.dump(self.N, handle)
 
     def load(self, fname):
         try:
             with open('save/' + fname, 'rb') as handle:
                 saved_vals = pickle.load(handle)
                 self.weights = saved_vals['weights']
-                self.N = saved_vals['N']
+                self.iter = saved_vals['iter']
         except:
             ValueError('Failed to load file %s' % ('save/' + fname))
+
+        try:
+            with open('save/' + fname + '-N', 'rb') as handle:
+                self.N = pickle.load(handle)
+        except:
+            ValueError('Failed to load file %s' % ('save/' + fname + '-N'))
