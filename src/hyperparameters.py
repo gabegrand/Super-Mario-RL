@@ -14,7 +14,7 @@ LOAD_FROM = None
 SAVE_EVERY = 10
 
 # 0 is Random Agent, 1 regular QLearningAgent, 2 is ApproxQAgent, 3 is ApproxSarsaAgent
-AGENT_TYPE = 3
+AGENT_TYPE = 2
 
 # Q Learning Agent Parameters
 ALPHA = 0.1     # Learning rate
@@ -30,6 +30,12 @@ DEATH_PENALTY = 100
 
 # Proportion of score increase added to reward (0 to 1)
 SCORE_FACTOR = 1.0
+
+# How many frames Mario is stuck for before the model rescues him
+STUCK_DURATION = 80
+
+# How many jumps the model uses to get Mario unstuck
+MAX_JUMPS = 25
 
 # Action mapping
 MAPPING = {
