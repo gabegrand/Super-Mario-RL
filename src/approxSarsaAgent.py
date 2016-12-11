@@ -50,16 +50,19 @@ class ApproxSarsaAgent(ApproxQAgent):
             q = self.getQ(self.s, self.a)
 
             # Add current features to trace
-            features = feat.getFeatures(self.s, self.a)
-            self.feature_traces.insert(0, features)
+            curr_features = feat.getFeatures(self.s, self.a)
+            self.feature_traces.insert(0, curr_features)
 
-            # Batch update weights
-            for i in xrange(len(self.feature_traces)):
-                if (self.varlambda ** i) > hp.MIN_LAMBDA:
-                    new_weights = util.Counter()
-                    for ft in self.feature_traces[i]:
-                        new_weights[ft] = self.weights[ft] + self.alpha * (self.varlambda ** i) * (self.r + self.gamma * q_prime - q) * features[ft]
-                    self.weights = new_weights
+            # Maintain max length of trace list
+            if len(self.feature_traces) >= hp.MAX_TRACES:
+                del self.feature_traces[-1]
+
+            # Batch update weights for each set of features in eligibility trace
+            for i, features in enumerate(self.feature_traces):
+                new_weights = util.Counter()
+                for ft in features:
+                    new_weights[ft] = self.weights[ft] + self.alpha * (self.varlambda ** i) * (self.r + self.gamma * q_prime - q) * features[ft]
+                self.weights = new_weights
 
         self.a = a_prime
         self.s = s_prime.copy()

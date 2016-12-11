@@ -1,4 +1,5 @@
 from collections import OrderedDict
+import math
 
 # Agents
 from qAgent import QLearningAgent
@@ -23,7 +24,7 @@ LOAD_FROM = None
 # How often to save desired values
 SAVE_EVERY = 10
 
-# 0 is Random Agent, 1 regular QLearningAgent, 2 is ApproxQAgent, 3 is ApproxSarsaAgent
+# Which agent to use
 AGENT_TYPE = ApproxQAgent
 
 # Q Learning Agent Parameters
@@ -35,6 +36,8 @@ MIN_LAMBDA = 0.1    # Minimum discounted value for which weight updates get comp
 
 # Note: when selecting LAMBDA params, we require LAMBDA^x > MIN_LAMBDA, so that
 # x is the number of previous states for which the weight update is applied
+MAX_TRACES = max(int(math.log(MIN_LAMBDA, LAMBDA)), 1)
+print('Eligibility trace length: %d' % MAX_TRACES)
 
 EP_DEC = 500.0
 

@@ -30,7 +30,7 @@ class ApproxQAgent(AbstractAgent):
         assert isinstance(s_prime, util.State)
 
         action_should_be_none = False
-        features = None
+        curr_features = None
 
         # Terminal case
         mpos = feat.marioPosition(s_prime.getTiles())
@@ -52,16 +52,19 @@ class ApproxQAgent(AbstractAgent):
                 q_prime = self.computeValueFromQValues(s_prime)
 
             # Add current features to trace
-            features = feat.getFeatures(self.s, self.a)
-            self.feature_traces.insert(0, features)
+            curr_features = feat.getFeatures(self.s, self.a)
+            self.feature_traces.insert(0, curr_features)
 
-            # Batch update weights
-            for i in xrange(len(self.feature_traces)):
-                if (self.varlambda ** i) > hp.MIN_LAMBDA:
-                    new_weights = util.Counter()
-                    for ft in self.feature_traces[i]:
-                        new_weights[ft] = self.weights[ft] + self.alpha * (self.varlambda ** i) * (self.r + self.gamma * q_prime - q) * features[ft]
-                    self.weights = new_weights
+            # Maintain max length of trace list
+            if len(self.feature_traces) > hp.MAX_TRACES:
+                del self.feature_traces[-1]
+
+            # Batch update weights for each set of features in eligibility trace
+            for i, features in enumerate(self.feature_traces):
+                new_weights = util.Counter()
+                for ft in features:
+                    new_weights[ft] = self.weights[ft] + self.alpha * (self.varlambda ** i) * (self.r + self.gamma * q_prime - q) * features[ft]
+                self.weights = new_weights
 
         # UPDATE STATE, ACTION, REWARD
 
@@ -74,7 +77,7 @@ class ApproxQAgent(AbstractAgent):
             self.a = self.computeActionFromQValues(s_prime)
 
             # If Mario is stuck, overwrite action with jump
-            if features and bool(features['stuck']):
+            if curr_features and bool(curr_features['stuck']):
                 self.stuck_duration += 1
 
                 # If stuck for too long, rescue him
