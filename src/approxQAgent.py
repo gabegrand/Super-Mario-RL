@@ -153,7 +153,7 @@ class ApproxQAgent(AbstractAgent):
         return action
 
     def numStatesLearned(self):
-        return None
+        return len(self.N)
 
     def getWeights(self):
         return self.weights

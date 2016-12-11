@@ -1,5 +1,12 @@
 from collections import OrderedDict
 
+# Agents
+from qAgent import QLearningAgent
+from approxQAgent import ApproxQAgent
+from approxSarsaAgent import ApproxSarsaAgent
+from randomAgent import RandomAgent
+from heuristicAgent import HeuristicAgent
+
 # Whether to display certain warnings used for testing
 DISPLAY_WARNINGS = False
 
@@ -17,14 +24,14 @@ LOAD_FROM = None
 SAVE_EVERY = 10
 
 # 0 is Random Agent, 1 regular QLearningAgent, 2 is ApproxQAgent, 3 is ApproxSarsaAgent
-AGENT_TYPE = 2
+AGENT_TYPE = ApproxQAgent
 
 # Q Learning Agent Parameters
 ALPHA = 0.1          # Learning rate
 MIN_EPSILON = 0.05   # Random move probability
 GAMMA = 0.95         # Discount factor
-LAMBDA = 0.8         # Eligibility trace decay in Q(LAMBDA)
-MIN_LAMBDA = 0.01    # Minimum discounted value for which weight updates get computed
+LAMBDA = 0.9         # Eligibility trace decay in Q(LAMBDA)
+MIN_LAMBDA = 0.1    # Minimum discounted value for which weight updates get computed
 
 # Note: when selecting LAMBDA params, we require LAMBDA^x > MIN_LAMBDA, so that
 # x is the number of previous states for which the weight update is applied
