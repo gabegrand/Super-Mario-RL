@@ -2,13 +2,13 @@
 DISPLAY_WARNINGS = False
 
 # Game
-WORLD = '1-3'
+WORLD = '1-1'
 LEVEL = 'ppaquette/SuperMarioBros-' + WORLD + '-Tiles-v0'
 
 TRAINING_ITERATIONS = 100
 
 # Whether to load from existing Q values file
-LOAD_FROM = '2016-12-11-1-5-world-1-3-iter-3.pickle'
+LOAD_FROM = None
 
 # How often to save desired values
 SAVE_EVERY = 1
