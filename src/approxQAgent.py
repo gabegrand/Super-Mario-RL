@@ -121,7 +121,7 @@ class ApproxQAgent(AbstractAgent):
         if util.flipCoin(max(hp.MIN_EPSILON, hp.EP_DEC / (hp.EP_DEC + self.iter))):
             self.iter += 1
             a = np.random.choice(self.actions, 1, p=hp.PRIOR)[0]
-            print(str(a) + '*')
+            # print(str(a) + '*')
             return a
 
         # Keep track of values of each action
@@ -140,7 +140,7 @@ class ApproxQAgent(AbstractAgent):
         # Return action with max value, breaking ties randomly
         action = self.actions[random.choice(indices)]
 
-        print action
+        # print action
 
         return action
 
@@ -162,7 +162,6 @@ class ApproxQAgent(AbstractAgent):
             pickle.dump(saved_vals, handle)
 
         with open('save/' + fname + '-N' + '.pickle', 'wb') as handle:
-            print "hello"
             pickle.dump(self.N, handle)
 
     def load(self, fname):

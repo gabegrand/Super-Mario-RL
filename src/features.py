@@ -47,6 +47,11 @@ def getFeatures(state, action):
 		if enemyDanger(curr_state, curr_mpos):
 			features['enemyDangerRight'] = enemyDangerRight(curr_state, curr_mpos)
 			features['enemyDangerLeft'] = enemyDangerLeft(curr_state, curr_mpos)
+	else:
+		features['enemyOnScreen'] = 0
+		features['canStompEnemy'] = 0
+		features['enemyDangerLeft'] = 0
+		features['enemyDangerRight'] = 0
 
 	# features['roofVertDistance'] = roofVertDistance(curr_state)
 
