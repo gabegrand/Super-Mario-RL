@@ -5,7 +5,7 @@ DISPLAY_WARNINGS = False
 WORLD = '1-1'
 LEVEL = 'ppaquette/SuperMarioBros-' + WORLD + '-Tiles-v0'
 
-TRAINING_ITERATIONS = 100
+TRAINING_ITERATIONS = 500
 
 # Whether to load from existing Q values file
 LOAD_FROM = None
@@ -18,8 +18,8 @@ AGENT_TYPE = 2
 
 # Q Learning Agent Parameters
 ALPHA = 0.1     # Learning rate
-MIN_EPSILON = 0.02   # Random move probability
-GAMMA = 0.9     # Discount factor
+MIN_EPSILON = 0.05   # Random move probability
+GAMMA = 0.95     # Discount factor
 
 EP_DEC = 500.0
 
