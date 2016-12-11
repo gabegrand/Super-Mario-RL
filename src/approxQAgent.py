@@ -156,17 +156,26 @@ class ApproxQAgent(AbstractAgent):
         now = datetime.now()
         fname = '-'.join([str(x) for x in [now.year, now.month, now.day, now.hour, now.minute]]) + '-world-' + hp.WORLD + '-iter-' + str(i + j)
 
-        saved_vals = {'weights': self.weights, 'N': self.N, 'iter': self.iter, 'diagnostics': diagnostics}
+        saved_vals = {'weights': self.weights, 'iter': self.iter, 'diagnostics': diagnostics}
 
         with open('save/' + fname + '.pickle', 'wb') as handle:
             pickle.dump(saved_vals, handle)
+
+        with open('save/' + fname + '-N' + '.pickle', 'wb') as handle:
+            print "hello"
+            pickle.dump(self.N, handle)
 
     def load(self, fname):
         try:
             with open('save/' + fname, 'rb') as handle:
                 saved_vals = pickle.load(handle)
                 self.weights = saved_vals['weights']
-                self.N = saved_vals['N']
                 self.iter = saved_vals['iter']
         except:
             ValueError('Failed to load file %s' % ('save/' + fname))
+
+        try:
+            with open('save/' + fname + '-N', 'rb') as handle:
+                self.N = pickle.load(handle)
+        except:
+            ValueError('Failed to load file %s' % ('save/' + fname + '-N'))

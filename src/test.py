@@ -142,7 +142,7 @@ try:
         # Save Q-values
         if i % hp.SAVE_EVERY == 0:
             print('Saving Q values...')
-            agent.save(i, j, diagnostics[i])
+            agent.save(i, j, diagnostics)
 
         # Go to next iteration
         print('Iteration %d / %d complete.' % (i + j, hp.TRAINING_ITERATIONS + j))
