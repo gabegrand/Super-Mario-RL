@@ -11,7 +11,7 @@ gapRightFar = []
 
 distance = []
 
-for i in xrange(10, 250, 10):
+for i in xrange(10, 500, 10):
 	string = '*iter-' + str(i) + '.pickle'
 	for file in os.listdir('plot'):
 		if fnmatch.fnmatch(file, string):
@@ -26,7 +26,7 @@ for i in xrange(10, 250, 10):
 				rightAction.append(weights['rightAction'])
 				gapRightFar.append(weights['gapRightFar'])
 
-				diagnostics = save_dict['diagnostics']
+				diagnostics = save_dict['diagnostics'][i]
 				distance.append(diagnostics['distance'])
 
 _, ax = plt.subplots(1, 3, figsize=(24, 8))

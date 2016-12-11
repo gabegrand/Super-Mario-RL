@@ -88,6 +88,7 @@ try:
 
         print('-- Resetting agent')
         agent.reset()
+        rewardFunction.reset()
 
         print('-- START playing iteration %d / %d' % (i + j, hp.TRAINING_ITERATIONS + j))
 
