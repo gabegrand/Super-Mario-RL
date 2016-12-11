@@ -11,7 +11,7 @@ TRAINING_ITERATIONS = 100
 LOAD_FROM = None
 
 # How often to save desired values
-SAVE_EVERY = 1
+SAVE_EVERY = 10
 
 # 0 is Random Agent, 1 regular QLearningAgent, 2 is ApproxQAgent, 3 is ApproxSarsaAgent
 AGENT_TYPE = 2
