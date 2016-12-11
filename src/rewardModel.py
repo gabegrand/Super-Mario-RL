@@ -25,7 +25,7 @@ class rewardModel:
             reward -= 1
 
         # Get Mario across checkpoint gap in World 1-1
-        if hp.WORLD == '1-1' and not self.crossedGap and info['distance'] > 1425:
+        if hp.WORLD == (1, 1) and not self.crossedGap and info['distance'] > 1425:
             print "Crossed gap! Reward +500!"
             reward += 500
             self.crossedGap = True

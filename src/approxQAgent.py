@@ -162,7 +162,7 @@ class ApproxQAgent(AbstractAgent):
 
         # Build save file name
         now = datetime.now()
-        fname = '-'.join([str(x) for x in [now.year, now.month, now.day, now.hour, now.minute]]) + '-world-' + hp.WORLD + '-iter-' + str(i + j)
+        fname = '-'.join([str(x) for x in [now.year, now.month, now.day, now.hour, now.minute]]) + '-world-' + hp.WORLD_STR + '-iter-' + str(i + j)
 
         saved_vals = {'weights': self.weights, 'iter': self.iter, 'diagnostics': diagnostics}
 

@@ -103,13 +103,17 @@ try:
         # Compute custom reward
         reward = rewardFunction.getReward(reward, info)
 
-        dead = False
+        dead = win = False
 
         # Begin main action-perception loop
         while not (info['iteration'] > i):
 
-            if dead:
-                # Take NOOP action til environment ready to reset
+            # Check if Mario is at the end of the level
+            if info['distance'] >= hp.LEVEL_WIN_DIST:
+                win = True
+
+            # Take NOOP action til environment ready to reset
+            if dead or win:
                 _, _, ready, _ = env.step(0)
                 if ready:
                     break
