@@ -9,6 +9,7 @@ class rewardModel:
 
     def __init__(self):
         self.curr_score = 0
+        self.crossedGap = False
 
     def getReward(self, reward, info):
 
@@ -22,6 +23,12 @@ class rewardModel:
 
         if reward <= 0:
             reward -= 1
+
+        # Get Mario across checkpoint gap in World 1-1
+        if hp.WORLD == '1-1' and not self.crossedGap and info['distance'] > 1425:
+            print "Crossed gap! Reward +500!"
+            reward += 500
+            self.crossedGap = True
 
         """ This functionality has been moved to getActionAndUpdate"""
         # If Mario dies, punish
@@ -37,3 +44,6 @@ class rewardModel:
             self.curr_score = int(info['score'])
 
         return reward
+
+    def reset(self):
+        self.crossedGap = False

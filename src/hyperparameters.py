@@ -17,9 +17,14 @@ SAVE_EVERY = 10
 AGENT_TYPE = 2
 
 # Q Learning Agent Parameters
-ALPHA = 0.1     # Learning rate
+ALPHA = 0.1          # Learning rate
 MIN_EPSILON = 0.05   # Random move probability
-GAMMA = 0.95     # Discount factor
+GAMMA = 0.95         # Discount factor
+LAMBDA = 0.8         # Eligibility trace decay in Q(LAMBDA)
+MIN_LAMBDA = 0.01    # Minimum discounted value for which weight updates get computed
+
+# Note: when selecting LAMBDA params, we require LAMBDA^x > MIN_LAMBDA, so that
+# x is the number of previous states for which the weight update is applied
 
 EP_DEC = 500.0
 
