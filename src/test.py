@@ -1,3 +1,9 @@
+"""
+CS 182 Final Project
+Super Mario Bros. Reinforcement Learning
+Gabe Grand and Kevin Loughlin, 2016
+"""
+
 # OpenAI Gym Framework and Super Mario Bros
 import gym
 # Only need to pull this once
