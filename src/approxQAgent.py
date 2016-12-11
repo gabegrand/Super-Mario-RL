@@ -7,8 +7,10 @@ class ApproxQAgent(AbstractAgent):
         self.N = util.Counter()
         self.alpha = hp.ALPHA
         self.gamma = hp.GAMMA
+        self.varlambda = hp.LAMBDA
         self.actions = hp.MAPPING.keys()
         self.iter = 0
+        self.feature_traces = []
 
         self.stuck_duration = 0
         self.jumps = 0
@@ -49,12 +51,20 @@ class ApproxQAgent(AbstractAgent):
             else:
                 q_prime = self.computeValueFromQValues(s_prime)
 
-            # Batch update weights
-            new_weights = util.Counter()
+            # Add current features to trace
             features = feat.getFeatures(self.s, self.a)
-            for ft in features:
-                new_weights[ft] = self.weights[ft] + self.alpha * (self.r + self.gamma * q_prime - q) * features[ft]
-            self.weights = new_weights
+            self.feature_traces.insert(0, features)
+
+            # Batch update weights
+            trace_length = 0
+            for i in xrange(len(self.feature_traces)):
+                if (self.varlambda ** i) > hp.MIN_LAMBDA:
+                    new_weights = util.Counter()
+                    for ft in self.feature_traces[i]:
+                        new_weights[ft] = self.weights[ft] + self.alpha * (self.varlambda ** i) * (self.r + self.gamma * q_prime - q) * features[ft]
+                    self.weights = new_weights
+                    trace_length += 1
+            print "trace length: ", trace_length
 
         # UPDATE STATE, ACTION, REWARD
 
@@ -99,6 +109,7 @@ class ApproxQAgent(AbstractAgent):
         self.r = None
         self.stuck_duration = 0
         self.jumps = 0
+        self.feature_traces = []
 
     def getQ(self, state, action):
         return self.weights * feat.getFeatures(state, action)
