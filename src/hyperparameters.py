@@ -28,10 +28,10 @@ SAVE_EVERY = 10
 AGENT_TYPE = ApproxQAgent
 
 # Q Learning Agent Parameters
-ALPHA = 0.1          # Learning rate
+ALPHA = 0.01          # Learning rate
 MIN_EPSILON = 0.05   # Random move probability
 GAMMA = 0.95         # Discount factor
-LAMBDA = 0.9         # Eligibility trace decay in Q(LAMBDA)
+LAMBDA = 0.8         # Eligibility trace decay in Q(LAMBDA)
 MIN_LAMBDA = 0.1    # Minimum discounted value for which weight updates get computed
 
 # Note: when selecting LAMBDA params, we require LAMBDA^x > MIN_LAMBDA, so that

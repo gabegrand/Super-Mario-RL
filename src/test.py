@@ -126,7 +126,11 @@ try:
 
         # Handles ApproxSARSA too, since child of ApproxQ
         if isinstance(agent, ApproxQAgent):
-            print agent.getWeights()
+            weights = agent.getWeights()
+            formatted_weights = {}
+            for w in weights:
+                formatted_weights[w] = float("%.2f" % weights[w])
+            print formatted_weights
 
         # Update diagnostics
         diagnostics[i] = {'states_learned': agent.numStatesLearned(),
