@@ -56,15 +56,12 @@ class ApproxQAgent(AbstractAgent):
             self.feature_traces.insert(0, features)
 
             # Batch update weights
-            trace_length = 0
             for i in xrange(len(self.feature_traces)):
                 if (self.varlambda ** i) > hp.MIN_LAMBDA:
                     new_weights = util.Counter()
                     for ft in self.feature_traces[i]:
                         new_weights[ft] = self.weights[ft] + self.alpha * (self.varlambda ** i) * (self.r + self.gamma * q_prime - q) * features[ft]
                     self.weights = new_weights
-                    trace_length += 1
-            print "trace length: ", trace_length
 
         # UPDATE STATE, ACTION, REWARD
 
