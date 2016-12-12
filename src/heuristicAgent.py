@@ -7,6 +7,7 @@ import random
 import numpy as np
 import features as ft
 
+# Implements heuristic-based baseline agent
 class HeuristicAgent:
     def __init__(self):
         self.actions = hp.MAPPING.keys()

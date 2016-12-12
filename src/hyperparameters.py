@@ -1,6 +1,8 @@
 from collections import OrderedDict
 import math
 
+# Contains hyperparameters to set before running test.py
+
 # Agents
 from qAgent import QLearningAgent
 from approxQAgent import ApproxQAgent

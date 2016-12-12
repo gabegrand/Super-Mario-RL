@@ -2,6 +2,8 @@ from features import *
 import numpy as np
 import sys
 
+# Scrap work file for testing feature functionality
+
 def checkAnswerPairs(answer_pairs):
 	for guess, ans in answer_pairs:
 		assert guess >= 0.0

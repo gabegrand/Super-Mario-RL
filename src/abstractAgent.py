@@ -6,6 +6,7 @@ from datetime import datetime
 import random
 import features as feat
 
+# ensures that all Q agents conform to the same methods
 class AbstractAgent:
 
     def getActionAndUpdate(self, state, reward):

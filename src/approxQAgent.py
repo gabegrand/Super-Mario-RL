@@ -1,5 +1,6 @@
 from abstractAgent import *
 
+# Implements Approximate Q Agent
 class ApproxQAgent(AbstractAgent):
 
     def __init__(self):

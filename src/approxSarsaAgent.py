@@ -1,5 +1,6 @@
 from approxQAgent import *
 
+# Implements approximate SARSA agent
 class ApproxSarsaAgent(ApproxQAgent):
 
     def getActionAndUpdate(self, s_prime, r_prime):

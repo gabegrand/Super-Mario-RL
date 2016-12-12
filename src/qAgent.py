@@ -1,5 +1,6 @@
 from abstractAgent import *
 
+# Implements Exact Q Learnig Agent
 class QLearningAgent(AbstractAgent):
 
     def __init__(self):
