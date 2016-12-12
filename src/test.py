@@ -14,6 +14,9 @@ from ppaquette_gym_super_mario import wrappers
 
 # Python modules
 import multiprocessing
+import subprocess
+import sys
+import os
 import numpy as np
 
 # Our code
@@ -29,10 +32,6 @@ from approxSarsaAgent import ApproxSarsaAgent
 from randomAgent import RandomAgent
 from heuristicAgent import HeuristicAgent
 
-import subprocess
-import sys
-import os
-
 try:
     print('-- Creating environment')
     env = gym.make(hp.LEVEL)
@@ -41,7 +40,7 @@ try:
     multiprocessing_lock = multiprocessing.Lock()
     env.configure(lock=multiprocessing_lock)
 
-    # Discretize action space to 14 possible button combinations
+    # Discretize action space
     wrapper = wrappers.ToDiscrete()
     env = wrapper(env)
 
@@ -49,17 +48,7 @@ try:
     env.reset()
 
     # Initialize the correct agent
-    if hp.AGENT_TYPE == 0:
-        agent = HeuristicAgent()
-    elif hp.AGENT_TYPE == 1:
-        agent = QLearningAgent()
-    elif hp.AGENT_TYPE == 2:
-        agent = ApproxQAgent()
-    elif hp.AGENT_TYPE == 3:
-        agent = ApproxSarsaAgent()
-    else:
-        raise ValueError("Invalid AGENT_TYPE in hyperparameters")
-
+    agent = hp.AGENT_TYPE()
     print("-- Using %s" % agent.__class__.__name__)
 
     # Load from previous saved Q values
@@ -103,13 +92,17 @@ try:
         # Compute custom reward
         reward = rewardFunction.getReward(reward, info)
 
-        dead = False
+        dead = win = False
 
         # Begin main action-perception loop
         while not (info['iteration'] > i):
 
-            if dead:
-                # Take NOOP action til environment ready to reset
+            # Check if Mario is at the end of the level
+            if info['distance'] >= hp.LEVEL_WIN_DIST:
+                win = True
+
+            # Take NOOP action til environment ready to reset
+            if dead or win:
                 _, _, ready, _ = env.step(0)
                 if ready:
                     break
@@ -133,18 +126,19 @@ try:
 
         # Handles ApproxSARSA too, since child of ApproxQ
         if isinstance(agent, ApproxQAgent):
-            print agent.getWeights()
-            # Update diagnostics
-            diagnostics[i] = {'distance': info['distance'],
-                              'score': info['score']}
-        else:
-            # Update diagnostics
-            diagnostics[i] = {'states_learned': agent.numStatesLearned(),
-                              'distance': info['distance'],
-                              'score': info['score']}
+            weights = agent.getWeights()
+            formatted_weights = {}
+            for w in weights:
+                formatted_weights[w] = float("%.2f" % weights[w])
+            print formatted_weights
 
-        print(info)
-        # print(diagnostics[i])
+        # Update diagnostics
+        diagnostics[i] = {'states_learned': agent.numStatesLearned(),
+                          'distance': info['distance'],
+                          'score': info['score']}
+
+        # print(info)
+        print(diagnostics[i])
 
         # Save Q-values
         if i % hp.SAVE_EVERY == 0:
@@ -163,6 +157,7 @@ try:
 
     # environment wasn't dying, so kill it
     subprocess.call(['./kill-mario.sh'])
+
 # Die on interrupt
 except KeyboardInterrupt:
     # environment wasn't dying, so kill it
