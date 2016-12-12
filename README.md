@@ -14,6 +14,6 @@ Next, open a Python environment in Terminal and execute the following commands.
 
     import gym
     import gym_pull
-    gym_pull.pull('github.com/ppaquette/gym-super-mario')
+    gym_pull.pull('github.com/ppaquette/gym-super-mario@gabegrand')
 
 Assuming everything installs correctly, you should be good to go! Navigate to the `Super-Mario-RL` directory and run `python test.py`.
