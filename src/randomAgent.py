@@ -50,25 +50,25 @@ class WeightedRandomAgent(RandomAgent):
         # If Mario is stuck, overwrite action with jump
         if state is not None:
             mpos = feat.marioPosition(state.getTiles())
+            if mpos is not None:
+                if feat.stuck(state.getTiles(), mpos):
+                    self.stuck_duration += 1
 
-            if feat.stuck(state.getTiles(), mpos):
-                self.stuck_duration += 1
+                    # If stuck for too long, rescue him
+                    if self.stuck_duration > hp.STUCK_DURATION:
+                        print "MODEL: Mario is stuck. Forcing jump to rescue..."
 
-                # If stuck for too long, rescue him
-                if self.stuck_duration > hp.STUCK_DURATION:
-                    print "MODEL: Mario is stuck. Forcing jump to rescue..."
+                        # On ground, get started with jump
+                        if feat.groundVertDistance(state.getTiles(), mpos) == 0:
+                            action = random.choice([0, 10])
+                        # Jump!
+                        else:
+                            action = 10
+                            self.jumps += 1
 
-                    # On ground, get started with jump
-                    if feat.groundVertDistance(state.getTiles(), mpos) == 0:
-                        action = random.choice([0, 10])
-                    # Jump!
-                    else:
-                        action = 10
-                        self.jumps += 1
-
-                    # Stop jumping and reset
-                    if self.jumps > hp.MAX_JUMPS:
-                        self.jumps = 0
-                        self.stuck_duration = 0
+                        # Stop jumping and reset
+                        if self.jumps > hp.MAX_JUMPS:
+                            self.jumps = 0
+                            self.stuck_duration = 0
 
         return action
