@@ -10,6 +10,9 @@ class QLearningAgent(AbstractAgent):
         self.gamma = hp.GAMMA
         self.actions = hp.MAPPING.keys()
 
+        self.stuck_duration = 0
+        self.jumps = 0
+
         self.r = None
         self.a = None
         self.s = None
@@ -52,6 +55,30 @@ class QLearningAgent(AbstractAgent):
         else:
             self.a = self.computeActionFromQValues(s_prime)
 
+            # If Mario is stuck, overwrite action with jump
+            if self.s:
+                mpos = feat.marioPosition(self.s.getTiles())
+
+                if feat.stuck(self.s.getTiles(), mpos):
+                    self.stuck_duration += 1
+
+                    # If stuck for too long, rescue him
+                    if self.stuck_duration > hp.STUCK_DURATION:
+                        print "MODEL: Mario is stuck. Forcing jump to rescue..."
+
+                        # On ground, get started with jump
+                        if feat.groundVertDistance(self.s.getTiles(), mpos) == 0:
+                            self.a = random.choice([0, 10])
+                        # Jump!
+                        else:
+                            self.a = 10
+                            self.jumps += 1
+
+                        # Stop jumping and reset
+                        if self.jumps > hp.MAX_JUMPS:
+                            self.jumps = 0
+                            self.stuck_duration = 0
+
         # Store state and reward for next iteration
         self.s = s_prime.copy()
         self.r = r_prime
@@ -62,6 +89,8 @@ class QLearningAgent(AbstractAgent):
         self.s = None
         self.a = None
         self.r = None
+        self.stuck_duration = 0
+        self.jumps = 0
 
     def getN(self, state, action):
         return self.N[str(state.getTiles()), action]

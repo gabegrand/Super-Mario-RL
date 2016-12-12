@@ -30,6 +30,7 @@ from qAgent import QLearningAgent
 from approxQAgent import ApproxQAgent
 from approxSarsaAgent import ApproxSarsaAgent
 from randomAgent import RandomAgent
+from randomAgent import WeightedRandomAgent
 from heuristicAgent import HeuristicAgent
 
 try:
